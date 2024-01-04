@@ -1,2 +1,2 @@
 # wxMaxima-projects
-Examples of calculations using the computer algebra system Maxima / Примеры вычислений с использованием системы компьютерной алгебры Maxima
+Various projects using the Maxima computer algebra system / Различные проекты с использованием системы компьютерной алгебры Maxima
