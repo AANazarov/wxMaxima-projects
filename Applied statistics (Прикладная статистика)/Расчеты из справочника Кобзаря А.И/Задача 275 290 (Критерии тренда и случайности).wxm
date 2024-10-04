@@ -1,0 +1,952 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 22.04.0 ] */
+/* [wxMaxima: input   start ] */
+kill(all)$                              /* очистка всех переменных */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Настройка каталогов
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load("operatingsystem")$    /* загрузка пакета для работы с операционной системой */          
+getcurrentdirectory ();        /* вывод текущего каталога */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+maxima_tempdir: "C:\\Users\\Default\\AppData\\Local\\Temp"$          /* C:\\Users\\Alexander\\AppData\\Local\\Temp */;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Настройки программы
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+fpprintprec : 5$                  /* количество цифр при выводе чисел float или bigfloat; по умолчанию = 0; не может быть = 1 */
+numer: true$                      /* true - проведение расчётов только с плавающей точкой, а не с рациональными числами */
+keepfloat: false$                 /* false - не переводить десятичную запись числа в рациональную форму; по умолчанию = false */
+ratepsilon: 2e-8$               /* допуск, на которую рациональное число при переводе может отклониться 
+                                                от конечной десятичной записи; по умолчанию: 2.0e-15 */
+ratprint: false$                    /* отключение сообщений о замене чисел с плавающей точкой на рациональные */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+stats_numer;                    /* выдача результатов в формате с плавающей запятой */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Загрузка дополнительных пакетов и библиотек
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(numericalio)$           /* загрузка пакета для чтения и записи матричных или потоковых данных */          
+load(draw)$                     /* загрузка графического пакета */          
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(stats)$                    /* загрузка пакета для проверки статистических гипотез */
+                                       /* загружает пакеты descriptive (для расчета описательной статистики), 
+                                            distrib (для для выполнения вероятностых вычислений) и inference_result */;
+load ("interpol")$                   /* загрузка пакета интерполяции */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Установка шрифтов
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+set_draw_defaults (font = "Arial", font_size = 10)$                 /* устанавливаем вид и размер шрифта */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+ЗАДАЧА 275-290
+Критерии тренда и случайности
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p_level: 0.95$                    /* доверительная вероятность */
+α_level: 1-p_level;                   /* уровень значимости */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+Задача 275.
+Критерий Аббе-Линника
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+Для НОРМАЛЬНО РАСПРЕДЕЛЕННЫХ  случайных величин.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Задача из источника (при n ≤ 60)
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Постановка задачи
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: caption start ]
+
+   [wxMaxima: caption end   ] */
+/* [wxMaxima: image   start ]
+png
+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
+   [wxMaxima: image   end   ] */
+
+/* [wxMaxima: comment start ]
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.517-519)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: comment start ]
+ИСХОДНЫЕ ДАННЫЕ:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X: read_list("Задача 275.txt");                                     /* cчитывание массива в формате Maxima, содержимое файла расценивается как одна строка */      
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Решение
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Расчетное значение статистики критерия
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: comment start ]
+Объем выборки:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: length(X); 
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочное среднее:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ: mean(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Среднеквадратическое отклонение:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+std(X);                 /* С.К.О по генеральной совокупности */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s: std1(X);                 /* С.К.О по выборке */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение статистики критерия Аббе-Линника:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum ((X[i+1] - X[i])^2, i, 1, n-1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum ((X[i] - μ)^2, i, 1, n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+q_calc: 1/2 * sum ((X[i+1] - X[i])^2, i, 1, n-1) / sum ((X[i] - μ)^2, i, 1, n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Нормальная аппроксимация (при n > 60):
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Q_calc: - (1 - q_calc) * sqrt ( (2*n + 1) / ( 2 - (1 - q_calc)^2 ) );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Табличное значение статистики критерия
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: comment start ]
+Загружаем табличные значения статистики критерия Аббе-Линника (при n ≤ 60).
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.518)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+qn: read_matrix ("qtable (критерий Аббе-Линника).txt", space)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Промежуточные значения определим с помошью интерполяции:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+nn: makelist (qn[i, 1], i, 1, length (col (qn, 1)))$                 
+q: makelist (qn[i, 2], i, 1, length (col (qn, 2)))$                 /* табличные значения значения статистики критерия аббе-Линника при p = 0.95 */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+linearinterpol (transpose (matrix (nn, q)))$                /* линейная интерполяция */
+q_table(x):= ''%$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+scene1: points (qn)$
+scene2: explicit (q_table(x), x, smin(nn), smax(nn))$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K_range_y: 1.4$                 /* коэф-т, учитывающий высоту графиков и гистограмм */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d (key_pos = top_right, proportional_axes = none,
+                color = red, point_type = filled_diamant, point_size = 1, key = "табличные значения (при р = 0.95)", scene1,
+                color = blue, key = "линейная интерполяция", scene2,
+                xrange = [0, smax(nn)], yrange = [0, smax(q)*K_range_y],
+                grid = true, grid = [5, 5],
+                xaxis = true, xaxis_type = dots, xaxis_width = 2,
+                yaxis = true, yaxis_type = dots, yaxis_width = 2,
+                xlabel = "n", ylabel = "q",
+                title = "Интерполяция табличных значений статистики критерия Аббе-Линника");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Проверка гипотезы
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: input   start ] */
+q_calc;         /* расчетное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+q_table(n);         /* табличное значение статистики критерия (при р = 0.95) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод:  if q_calc ≤ q_table(n) 
+    then "Нулевая гипотеза о принадлежности всех выборочных значений одной генеральной совокупности ПРИНИМАЕТСЯ, т.е. 
+набор значений МОЖЕТ быть признан случайным"
+    else "Нулевая гипотеза о принадлежности всех выборочных значений одной генеральной совокупности ОТКЛОНЯЕТСЯ, т.е. 
+набор значений НЕ МОЖЕТ быть признан случайным";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Нормальная аппроксимация (при n > 60):
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Q_calc;         /* расчетное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Q_table: quantile_normal(1-p_level, 0 ,1);         /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод:  if Q_calc ≤ Q_table 
+    then "Нулевая гипотеза о принадлежности всех выборочных значений одной генеральной совокупности ПРИНИМАЕТСЯ, т.е. 
+набор значений МОЖЕТ быть признан случайным"
+    else "Нулевая гипотеза о принадлежности всех выборочных значений одной генеральной совокупности ОТКЛОНЯЕТСЯ, т.е. 
+набор значений НЕ МОЖЕТ быть признан случайным";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Смоделированная задача (при n > 60)
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Моделируем выборку с распределение Вейбулла
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Смоделируем выборку с нормальным законом распределения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n_X1: 55$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+λ: 1$                 /* заданные параметры распределения */
+k: 0.9$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1: random_weibull (k, λ, n_X1)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+TitleString: "Распределение Вейбулла W(k,λ) (k = 1, λ =7)"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1_lim_min: mean(X1) - 4*std1(X1);                  /* принимаем условное значение для построения графиков */
+X1_lim_max: mean(X1) + 4*std1(X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Параметры распределения, оцененные по выборке:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ μ_X1: mean(X1);
+s_X1: std1(X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Гистограмма:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X1: histogram_description (X1,
+                                               nclasses = sturges,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                               frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                               fill_density = 0.5)$
+bars_X1: hist_X1[5]$                  /* извлекаем данные из результатов применения функции histogram_description */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_emp_X1: makelist (part (bars_X1, i)[2], i, 1, length(bars_X1));                  /* формируем список эмпирических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Δ_hist_X1: makelist (part (bars_X1, i)[3], i, 1, length(bars_X1))$                  /* формируем список ширины интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K: length(bars_X1);                  /* число интервалов группирования*/
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum (m_emp_X1[i], i, 1, length(m_emp_X1));                  /* проверяем правильность подсчета эмпирических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X1,
+                     color = blue, key = "теоретическая нормальная кривая",
+                     explicit ( n_X1 * (range(X1)/K)*pdf_normal(x, μ_X1, s_X1), x, X1_lim_min, X1_lim_max),
+                     xrange = [X1_lim_min, X1_lim_max],
+                     yrange = [0, smax(m_emp_X1)*1.5],
+                     grid = true,
+                     title = TitleString,                                            
+                     fill_color = red,
+                     xlabel = "x", ylabel = "Абсолютная частота (absolute)");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Диаграмма размаха (box-and-whisker):
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( boxplot_description ( X1,
+                                                range = 1.5,      /* диапазон (по умолчанию, inf): положительный коэффициент межквартильного диапазона для определения границ выбросов */
+                                                box_orientation = horizontal,
+                                                box_width = 0.2, line_width = 3, outliers_size = 2,                                                 
+                                                color = red,
+                                                title = TitleString,
+                                                xlabel = "x", ylabel = " " ) )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+P-P график
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1sort: sort(X1)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Ptheor: makelist ( (i-0.375)/(n_X1+0.25), i, 1, n_X1 )$                   /* расчет эмпирической вероятности по формуле Блома */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Zsort: makelist ( (X1sort[i]-μ_X1)/s_X1, i, 1, n_X1 )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Теоретическая функция распределения
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Pemp: makelist ( cdf_normal (Zsort[i], 0, 1), i, 1, n_X1)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+scene1: points (transpose (matrix (Pemp, Ptheor)))$                  /* формируем матрицу экспериметнальных данных */
+scene2: explicit (x, x, 0, 1)$                   /* формируем выражение теоретической прямой */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d (color = red, point_type = 6, key = "эмпирические данные", scene1,
+                color = blue, key = "нормальное распределение", scene2,
+                key_pos = top_left,
+                grid = true,
+                title = TitleString,
+                xlabel = "Z", ylabel = "P");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка нормальности по критерию Шапиро-Уилка
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_normality(X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if take_inference(2, %) ≥ α_level then sprint("Так как Pvalue ≥ 0.05, то гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ")
+                                               else sprint("Так как Pvalue < 0.05, то гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Решение
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Расчетное значение статистики критерия
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: comment start ]
+Объем выборки:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: length(X1); 
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочное среднее:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ: mean(X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Среднеквадратическое отклонение:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+std(X1);                 /* С.К.О по генеральной совокупности */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s: std1(X1);                 /* С.К.О по выборке */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Проверка гипотезы
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: input   start ] */
+q_calc: 1/2 * sum ((X1[i+1] - X1[i])^2, i, 1, n-1) / sum ((X1[i] - μ)^2, i, 1, n);         /* расчетное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+q_table(n);         /* табличное значение статистики критерия (при р = 0.95) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод:  if q_calc ≤ q_table(n) 
+    then "Нулевая гипотеза о принадлежности всех выборочных значений одной генеральной совокупности ПРИНИМАЕТСЯ, т.е. 
+набор значений МОЖЕТ быть признан случайным"
+    else "Нулевая гипотеза о принадлежности всех выборочных значений одной генеральной совокупности ОТКЛОНЯЕТСЯ, т.е. 
+набор значений НЕ МОЖЕТ быть признан случайным";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Нормальная аппроксимация (при n > 60):
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Q_calc: - (1 - q_calc) * sqrt ( (2*n + 1) / ( 2 - (1 - q_calc)^2 ) );         /* расчетное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Q_table: quantile_normal(1-p_level, 0 ,1);         /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод:  if Q_calc ≤ Q_table 
+    then "Нулевая гипотеза о принадлежности всех выборочных значений одной генеральной совокупности ПРИНИМАЕТСЯ, т.е. 
+набор значений МОЖЕТ быть признан случайным"
+    else "Нулевая гипотеза о принадлежности всех выборочных значений одной генеральной совокупности ОТКЛОНЯЕТСЯ, т.е. 
+набор значений НЕ МОЖЕТ быть признан случайным";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Т.к. n > 60, то воспользуемся нормальной аппроксимацией:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+q_calc: 1/2 * sum ((X1[i+1] - X1[i])^2, i, 1, n-1) / sum ((X1[i] - μ)^2, i, 1, n);
+Q_calc: - (1 - q_calc) * sqrt ( (2*n + 1) / ( 2 - (1 - q_calc)^2 ) );                    /* расчетное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Q_table: quantile_normal(1-p_level, 0 ,1);         /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод:  if Q_calc ≤ Q_table 
+    then "Нулевая гипотеза о принадлежности всех выборочных значений одной генеральной совокупности ПРИНИМАЕТСЯ, т.е. 
+набор значений МОЖЕТ быть признан случайным"
+    else "Нулевая гипотеза о принадлежности всех выборочных значений одной генеральной совокупности ОТКЛОНЯЕТСЯ, т.е. 
+набор значений НЕ МОЖЕТ быть признан случайным";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+Задача 276.
+Критерий Фостера-Стюарта
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Задача из источника (при n ≤ 50)
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Постановка задачи
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверить наличие тренда критерием Фостера-Стюарта для данных задачи 275.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Решение
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Расчетное значение статистики критерия
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Объем выборки:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: length(X); 
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+u: makelist (0, i, 1, n-1)$           /* создаем вспомогательные массивы */
+l: makelist (0, i, 1, n-1)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xmin: X[1]$
+Xmax: X[1]$
+for i: 2 step 1 thru n do ( if X[i] > Xmax then (u[i-1]: 1,
+                                                                   Xmax: X[i]),
+                                     if X[i] < Xmin then (l[i-1]: 1,
+                                                                   Xmin: X[i]))$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+u;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+l;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+d: makelist (u[i] - l[i], i, 1, n-1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+S: makelist (u[i] + l[i], i, 1, n-1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+d_calc: sum ( d[i], i, 1, n-1 );           /* статистика для проверки тренда средних величин */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+S_calc: sum ( S[i], i, 1, n-1 );           /* статистика для проверки тренда дисперсий */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табулирование расчетов:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "i", "X", "u", "l", "d", "S"])$
+Table: "______________________________________________________"$
+
+printf (true, "~a", Table)$
+printf(true, "~10a~15a~15a~16a~14a~15a~15a", "",
+            String[1],
+            String[2],
+            String[3],
+            String[4],
+            String[5],
+            String[6],            
+            "")$
+printf (true, "~a", Table)$
+for i: 2 step 1 thru n do printf (true,"~10d~15,2f~13d~16d~13d~16d~%",
+                                                                i,
+                                                                X[i],    
+                                                                u[i-1],
+                                                                l[i-1],    
+                                                                d[i-1],
+                                                                S[i-1])$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Табличное значение статистики критерия
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: comment start ]
+Загружаем табличные значения постоянных f и l критерия Фостера-Стюарта (при n ≤ 50).
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.519)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+FS: read_matrix ("FS (критерий Фостера-Стюарта).txt", space);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Промежуточные значения определим с помошью интерполяции:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+nn: makelist (FS[i, 1], i, 1, length (col (FS, 1)))$                 
+ff: makelist (FS[i, 2], i, 1, length (col (FS, 2)))$
+ll: makelist (FS[i, 3], i, 1, length (col (FS, 3)))$                 /* табличные значения значения статистики критерия аббе-Линника при p = 0.95 */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+linearinterpol (transpose (matrix (nn, ff)))$                /* линейная интерполяция */
+f_table(x):= ''%$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+linearinterpol (transpose (matrix (nn, ll)))$                /* линейная интерполяция */
+l_table(x):= ''%$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Аппроксимация табличных значений при n > 50:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f_appr(x):= if x > 50 then sqrt (2*log(x) - 0.8456);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+l_appr(x):= if x > 50 then sqrt (2*log(x) - 3.4253);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Графики табличных значений:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K_range_y: 1.4$                 /* коэф-т, учитывающий высоту графиков и гистограмм */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+scene_f_1: points ( addcol (transpose(matrix (nn)), transpose(matrix (ff))) )$
+scene_f_2: explicit (f_table(x), x, smin(nn), smax(nn))$
+scene_f_3: explicit (f_appr(x), x, 51, 100)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d (key_pos = top_right, proportional_axes = none,
+                color = red, point_type = filled_diamant, point_size = 1, key = "табличные значения", scene_f_1,
+                color = blue, key = "линейная интерполяция", scene_f_2,
+                color = magenta, key = "аппроксимация при n > 50", scene_f_3,    
+                xrange = [0, 100], yrange = [1, smax(ff)*K_range_y],
+                grid = true, grid = [5, 5],
+                xaxis = true, xaxis_type = dots, xaxis_width = 2,
+                yaxis = true, yaxis_type = dots, yaxis_width = 2,
+                xlabel = "n", ylabel = "f",
+                title = "Интерполяция табличных значений постоянной f критерия Фостера-Стюарта");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+scene_l_1: points ( addcol (transpose(matrix (nn)), transpose(matrix (ll))) )$
+scene_l_2: explicit (l_table(x), x, smin(nn), smax(nn))$
+scene_l_3: explicit (l_appr(x), x, 51, 100)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d (key_pos = top_right, proportional_axes = none,
+                color = red, point_type = filled_diamant, point_size = 1, key = "табличные значения", scene_l_1,
+                color = blue, key = "линейная интерполяция", scene_l_2,
+                color = magenta, key = "аппроксимация при n > 50", scene_l_3,        
+                xrange = [0, 100], yrange = [1, smax(ll)*K_range_y],
+                grid = true, grid = [5, 5],
+                xaxis = true, xaxis_type = dots, xaxis_width = 2,
+                yaxis = true, yaxis_type = dots, yaxis_width = 2,
+                xlabel = "n", ylabel = "l",
+                title = "Интерполяция табличных значений постоянной l критерия Фостера-Стюарта");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Функции табличных значений постоянных f и l критерия Фостера-Стюарта:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f_tab(n):= if n ≥ 10 and n ≤ 50 then f_table(n) else f_appr(n)$
+l_tab(n):= if n ≥ 10 and n ≤ 50 then l_table(n) else l_appr(n)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Проверка гипотезы
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: comment start ]
+Объем выборки:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетные значения величин d и S критерия Фостера-Стюарта:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+d_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+S_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличные значения постоянных f и l критерия Фостера-Стюарта:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f_tab(n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+l_tab(n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетные значения статистик критерия Фостера-Стюарта:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+td_calc: d_calc / f_tab(n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+tS_calc: (S_calc - (f_tab(n))^2) / l_tab(n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличные значения статистик критерия Фостера-Стюарта:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+t_FS_calc: quantile_student_t ( (1 + p_level)/2 , n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка гипотезы о наличии тренда средних величин:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: comment start ]
+H0: тренд средних величин отсутствует
+H1: тренд средних величин присутствует
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод:  if abs(td_calc) ≤ t_FS_calc then "Нулевая гипотеза принимается, т.е. тренд средних величин ОТСУТСТВУЕТ"
+                                                      else "Нулевая гипотеза отклоняется, т.е. тренд средних величин ПРИСУТСТВУЕТ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка гипотезы о наличии тренда дисперсии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: comment start ]
+H0: тренд дисперсии отсутствует
+H1: тренд дисперсии присутствует
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод:  if abs(tS_calc) ≤ t_FS_calc then "Нулевая гипотеза принимается, т.е. тренд дисперсии ОТСУТСТВУЕТ"
+                                                      else "Нулевая гипотеза отклоняется, т.е. тренд дисперсии ПРИСУТСТВУЕТ";
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 22.04.0"$

@@ -1,0 +1,288 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 22.04.0 ] */
+/* [wxMaxima: input   start ] */
+maxima_tempdir: "C:\\Users\\Default\\AppData\\Local\\Temp"$          /* C:\\Users\\Alexander\\AppData\\Local\\Temp */;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kill(all)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+fpprintprec : 5$                  /* точность вычислений */
+numer: true$                          /* проведение расчётов только с плавающей точкой, а не с рациональными числами */
+keepfloat: true$                            /* не переводить десятичную запись числа в рациональную форму */
+ratepsilon: 2e-8$                          /* мера, на которую рациональное число при переводе может отклониться от конечной десятичной записи */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(numericalio)$                  /* загрузка пакета для чтения и записи матричных или потоковых данных */          
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(stats)$                    /* загрузка пакета для проверки статистических гипотез */
+                                        /* загружает пакеты descriptive (для расчета описательной статистики), distrib (для для выполнения вероятностых вычислений) и inference_result */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+stats_numer;                    /* выдача результатов в формате с плавающей запятой */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+ЗАДАЧА 45
+Интервальное оценивание среднего значения
+(при нормальном распределении)
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: title   start ]
+Постановка задачи
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: comment start ]
+ИСХОДНЫЕ ДАННЫЕ:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X: read_list("Задача 45.txt");                                     /* cчитывание массива в формате Maxima, содержимое файла расценивается как одна строка */      
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p: 0.95$                    /* доверительная вероятность */
+α: 1 - p;                   /* уровень значимости */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+НАЙТИ: двустороннюю и односторонние интервальные оценки среднего.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: title   start ]
+Решение
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: section start ]
+Общие данные
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+Объем выборки:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: length(X); 
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочное среднее:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ: mean(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Среднеквадратическое отклонение:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+std(X);                 /* С.К.О по генеральной совокупности */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s: std1(X);                 /* С.К.О по выборке */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+Оценка при неизвестной дисперсии:
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Двусторонняя оценка (μ_min ≤ μ ≤ μ_max)
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Число степеней свободы:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f: n-1;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Квантиль распределения Стьюдента:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+γ: (1+p)/2;
+γ: 1 - α/2;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+quantile_student_t (γ, n-1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+t(γ, n):= quantile_student_t (γ, n-1)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Интервальная оценка среднего:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ_min: μ - t(γ, n) * s / √(n)$
+μ_max: μ + t(γ, n) * s / √(n)$
+matrix([μ_min, μ_max]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+ВЫВОД: с вероятностью p = 0.95 значение среднего находится в интервале μ_min ≤ μ ≤ μ_max.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка с помощью встроенных средств Maxima: t-тест для среднего значения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_mean (X, p);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+take_inference(conf_interval, %);                   /* доверительный интервал выборочного среднего */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Односторонние оценки (μ ≥ μ_min, μ ≤ μ_max)
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Квантиль распределения Стьюдента:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+γ: p;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+γ: 1 - α;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+quantile_student_t (γ, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Интервальная оценка среднего:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+t(γ, n) * s / √(n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ_min: μ - t(γ, n) * s / √(n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ_max: μ + t(γ, n) * s / √(n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+ВЫВОД: с вероятностью p = 0.95 имеем односторонние интервалы μ ≥ μ_min, μ ≤ μ_max.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Построим зависимость ошибки выборочного среднего от величины доверительной вероятности
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ε(p):= t((1+p)/2, n) * s / √(n)$                    δ(p):= ε(p)/μ$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+pt: [0.75, 0.9, 0.95, 0.975, 0.99, 0.995, 0.999]$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+εt: makelist(ε(pt[i]), i, 1, length(pt));                   /* формируем список со значенями для построения дискретного графика */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+δt: makelist(δ(pt[i]), i, 1, length(pt));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", "__________________________________________________________________________________________")$
+printf (true, "~a ~23a ~21a ~28a ~25a ~27a ~27a", "                       " ,"p", "α = 1-p", "γ = 1 - α/2", "t(γ)", "ε(γ)", "δ(γ)")$
+printf (true, "~a", "__________________________________________________________________________________________")$
+for i:1 step 1 while i ≤ length(pt) do ( printf (true,"~{~25,3h~} ~%", [ pt[i],
+                                                                                                                  1 - pt[i],
+                                                                                                                  (1 + pt[i])/2,
+                                                                                                                  quantile_student_t ( (1 + pt[i])/2, f ),
+                                                                                                                  ε(pt[i]),
+                                                                                                                  δ(pt[i]) ] ))$
+printf(true, "~a", "__________________________________________________________________________________________")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxplot2d( 
+           [discrete, pt, δt],
+           [title,"Отн.ошибка выборочного среднего (по критерию Стьюдента)"],
+           [xlabel,"Доверительная вероятность p"], [ylabel,"Отн.ошибка выборочного среднего δ"],
+           [gnuplot_postamble, "set grid; set size ratio 0.5"]    );   
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 22.04.0"$

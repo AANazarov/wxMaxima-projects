@@ -1,0 +1,408 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 22.04.0 ] */
+/* [wxMaxima: input   start ] */
+maxima_tempdir: "C:\\Users\\Default\\AppData\\Local\\Temp"$          /* C:\\Users\\Alexander\\AppData\\Local\\Temp */;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kill(all)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+fpprintprec : 5$                  /* точность вычислений */
+numer: true$                          /* проведение расчётов только с плавающей точкой, а не с рациональными числами */
+keepfloat: true$                            /* не переводить десятичную запись числа в рациональную форму */
+ratepsilon: 2e-8$                          /* мера, на которую рациональное число при переводе может отклониться от конечной десятичной записи */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(numericalio)$                  /* загрузка пакета для чтения и записи матричных или потоковых данных */          
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(stats)$                    /* загрузка пакета для проверки статистических гипотез */
+                                        /* загружает пакеты descriptive (для расчета описательной статистики), distrib (для для выполнения вероятностых вычислений) и inference_result */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+stats_numer;                    /* выдача результатов в формате с плавающей запятой */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+log10(x) := log(x) / log(10);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+ЗАДАЧА 122
+Проверка нормальности распределения
+по критерию асимметрии и эксцесса
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p: 0.95$                    /* доверительная вероятность */
+α: 1-p;                   /* уровень значимости */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+Задача из книги Кобзаря:
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X: [-1, 0, 1, 2, 3, 5, 6, 7, 10, 15]$                  /* используются данные задачи 107 */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxhistogram (X,
+                        frequency = relative,
+                        nclasses = fd,                  /* алгоритм группирования Фридмана-Диакониса */
+                        ylabel = "Относительная частота",
+                        fill_color = red,
+                        fill_density = 0.3 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxhistogram (X,
+                        frequency = relative,
+                        nclasses = scott,                  /* алгоритм группирования Скотта */
+                        ylabel = "Относительная частота",
+                        fill_color = red,
+                        fill_density = 0.3 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxhistogram (X,
+                        frequency = relative,
+                        nclasses = sturges,                    /* алгоритм группирования Стерджесса */
+                        ylabel = "Относительная частота",
+                        fill_color = red,
+                        fill_density = 0.3 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: length(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Асимметрия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+skewness(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+As: central_moment (X, 3) / ( (central_moment (X, 2))^(3/2) );                    /* проверка */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Эксцесс:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kurtosis(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Es: central_moment (X, 4) / ( (central_moment (X, 2))^2 ) - 3;                    /* проверка */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kurtosis(X) + 3;                    /* выражение для эксцесса, используемое в книге Кобзаря */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Критерий асимметрии
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+"Грубый" критерий (применим при n ≥ 200)
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+abs(As);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Дисперсия асимметрии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+DAs: 6 * (n-2) / ((n+1)*(n+3));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличное значение статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sqrt(DAs);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if abs(As) < DAs then "Гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ"
+                                               else "Гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Критерий асимметрии (см. книгу Львовского, с.29)
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Несмещенная оценка показателя асимметрии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+As1: sqrt (n*(n-1)) / (n-2) * As;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Дисперсия несмещенной оценки показателя асимметрии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+DAs1: 6*n*(n-1) / ((n-2)*(n+1)*(n+3));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличное значение статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+3*sqrt(DAs1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if abs(As1) ≤ 3*sqrt(DAs1) then "Гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ"
+                                               else "Гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Критерии асимметрии с использованием нормализующего преобразования:
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Z-преобразование:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+y: As*sqrt ((n+1)*(n+3) / (6*(n-2)));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+β: 3*(n² + 27*n -70)*(n+1)*(n+3) / ((n-2)*(n+5)*(n+7)*(n+9));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ω2: -1 + sqrt (2*(β-1));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+δ: (log(sqrt(ω2)))^(-0.5);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+α: sqrt (2 / (ω2-1));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+z: δ * log (y/α + sqrt ((y/α)² +1));                    /* расчетное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+quantile_normal (p, 0, 1);                      /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if z ≤ quantile_normal (p, 0, 1) then "Гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ"
+                                                    else "Гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Критерий эксцесса
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Критерий асимметрии (см. книгу Львовского, с.29)
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Несмещенная оценка показателя эксцесса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Es1: (n-1) / ((n-2)*(n-3)) * ((n+1)*Es + 6);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Дисперсия несмещенной оценки показателя эксцесса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+DEs1: (24*n*(n-1)²) / ((n-3)*(n-2)*(n+3)*(n+5));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличное значение статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+5*sqrt(DEs1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if abs(Es1) ≤ 5*sqrt(DEs1) then "Гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ"
+                                               else "Гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Критерии эксцесса с использованием нормализующего преобразования:
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+d-преобразование:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+MEs: 3 - 6 / (n+1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+DEs: 24*n*(n-2)*(n-3) / ((n+1)² * (n+3)*(n+5));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+c: 6*(n² - 5*n +2) / ((n+7)*(n+9)) * sqrt (6*(n+3)*(n+5) / (n*(n-2)*(n-3)));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f: 6 + (8/c) * ( (2/c) + sqrt (1 + 4/c^2) );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+x: ((kurtosis(X) + 3) - MEs) / sqrt(DEs);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+d: ( 1 - 2/(9*f) - ( (1-2/f) / (1 + x*sqrt(2/(f-4))) )^(1/3) ) * (2/(9*f))^-0.5;                    /* расчетное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+quantile_normal (p, 0, 1);                      /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if d ≤ quantile_normal (p, 0, 1) then "Гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ"
+                                                    else "Гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Комбинированный К²-критерий
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K2: z² + d²;                    /* расчетное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+quantile_chi2 (p, 2);                   /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if K2 ≤ quantile_chi2 (p, 2) then "Гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ"
+                                              else "Гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 22.04.0"$

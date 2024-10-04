@@ -1,0 +1,2278 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 22.04.0 ] */
+/* [wxMaxima: input   start ] */
+maxima_tempdir: "C:\\Users\\Default\\AppData\\Local\\Temp"$          /* C:\\Users\\Alexander\\AppData\\Local\\Temp */;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kill(all)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+fpprintprec : 4$                  /* точность вычислений */
+numer: true$                          /* проведение расчётов только с плавающей точкой, а не с рациональными числами */
+keepfloat: true$                            /* не переводить десятичную запись числа в рациональную форму */
+ratepsilon: 2e-8$                          /* мера, на которую рациональное число при переводе может отклониться от конечной десятичной записи */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(numericalio)$                  /* загрузка пакета для чтения и записи матричных или потоковых данных */          
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(stats)$                    /* загрузка пакета для проверки статистических гипотез */
+                                       /* загружает пакеты descriptive (для расчета описательной статистики), distrib (для для выполнения вероятностых вычислений) и inference_result */;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load ("interpol") $                 /* загрузка пакета интерполяции */
+load(draw)$
+load("mnewton")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+stats_numer;                    /* выдача результатов в формате с плавающей запятой */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+log10(x) := log(x) / log(10);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+set_draw_defaults (font = "Arial", font_size = 10)$                 /* устанавливаем вид и размер шрифта */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+ЗАДАЧА 91
+Проверка гипотезы о принадлежности выборки
+нормальному закону распределения
+с использование критерия хи-квадрат
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: comment start ]
+(Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.207)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p: 0.95$                    /* доверительная вероятность */
+α: 1-p;                   /* уровень значимости */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+ЗАДАЧА ИЗ ИСТОЧНИКА
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Постановка задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверить гипотезу о принадлежности выборки нормальномук закону распределения с параметрами:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ_0: 101$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s_0: 16$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Подготовка исходных данных
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+TitleString: "Задача 91 (Кобзарь (2006)"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X: read_list("Задача 91.txt");                                     /* cчитывание массива в формате Maxima, содержимое файла расценивается как одна строка*/      
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Первичная обработка результатов наблюдений
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Гистограмма
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n_X: length(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X: histogram_description (X,
+                                                      nclasses = sturges,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                                      frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                      fill_density = 0.5)$
+histfr_X: makelist (part (hist_X[5], i)[2], i, 1, length(hist_X[5]))$       /* результат функции histogram_description - frequency по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d (color = red, key = "алгоритм группирования Стерджесса",
+                    hist_X,
+                    yrange = [0, smax(histfr_X)*1.5],                        
+                    grid = true,
+                    title = TitleString,                                            
+                    xlabel = "X", ylabel = "Абсолютная частота" );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Характеристики выборки
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочное среднее значение:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ_X: mean(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+t-тест для среднего значения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_mean (X, p);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_μX: take_inference(conf_interval, %);                   /* доверительный интервал выборочного среднего */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Медиана:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Me_X: median(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочная дисперсия и С.К.О.:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+D_X: var1(X);                    /* выброчная дисперсия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочное С.К.О.:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s_X: std1(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+χ²-тест для дисперсии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_variance (X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_D_X: take_inference(conf_interval, %);                   /* доверительный интервал дисперсии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_s_X: sqrt(%);                    /* доверительный интервал С.К.О. */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Вариационный размах и коэффициент вариации:]
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xmin: smin(X);                    /* минимальное значение */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xmax: smax(X);                    /* максимальное значение */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+R_X: range(X);                    /* вариационный размах */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+V_X: cv (X);                    /* коэффициент вариации */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % ≤ 0.33 then sprint("Выборка однородна") else sprint("Выборка НЕоднородна")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Асимметрия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+As_X: skewness (X);                 /* показатель асимметрии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+As1_X: sqrt (n_X*(n_X-1)) / (n_X-2) * As_X;                 /* несмещенная оценка показателя асимметрии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценка асимметрии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % = 0 then sprint("Асимметрия отсутствует")
+              else if % < 0 then if abs(%) ≤ 0.25 then sprint("Асимметрия левосторонняя, незначительная")
+                                                                           else if abs(%) ≤ 0.5 then sprint("Асимметрия левосторонняя, умеренная")
+                                                                                                              else sprint("Асимметрия левосторонняя, значительная")
+                                     else if abs(%) ≤ 0.25 then sprint("Асимметрия правосторонняя, незначительная")
+                                                                           else if abs(%) ≤ 0.5 then sprint("Асимметрия правосторонняя, умеренная")
+                                                                                                              else sprint("Асимметрия правосторонняя, значительная")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Эксцесс:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Es_X: kurtosis (X);                 /* показатель эксцесса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kurtosis(X) + 3;                    /* выражение для эксцесса, используемое в книге Кобзаря */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Es1_X: (n_X-1) / ((n_X-2)*(n_X-3)) * ((n_X+1)*Es_X + 6);                    /* несмещенная оценка показателя эксцесса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценка эксцесса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % = 0 then sprint("Распределение нормальное")
+              else if % > 0 then sprint("Распределение островершинное")
+                                     else sprint("Распределение плосковершинное")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Проверка нормальности по критерию Шапиро-Уилка
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_normality(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if take_inference(2, %) ≥ α then sprint("Так как Pvalue ≥ 0.05, то гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ")
+                                               else sprint("Так как Pvalue < 0.05, то гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Теоретическая и эмпирическая функция распределения
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Параметры распределения, заданные в рамках простой гипотезы:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m: μ_0;                 /* параметр сдвига */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s: s_0;                   /* параметр масштаба */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+cdf_theor(x):= cdf_normal (x, m, s)$                    /* теоретическая функция распределения нормального закона с параметрами  m = μ_0, s = s_0 */
+cdf_theor_Z(x):= cdf_normal (x, 0, 1)$                    /* теоретическая функция распределения нормального закона с параметрами  m = 0, s = 1 */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+cdf_emp(x):= ''( cdf_empirical(X) )$                       /* эмпирическая функция распределения */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирическая функция распределения", line_width = 2.0,
+                     explicit ( cdf_emp(x), x, 0, smax(X)+150 ),
+                     color = blue, key = "теоретическая функция распределения", line_width = 1.0,
+                     explicit ( cdf_theor(x), x, 0, smax(X)+150 ),                     
+                     grid = true,
+                     xrange = [smin(X), smax(X)+150], yrange = [0, 1],                 
+                     title = "Теоретическая и эмпирическая функции распределения",                                            
+                     fill_color = red,
+                     xlabel = "X");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Теоретическая и эмпирическая плотность распределения
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+pdf_theor(x):= pdf_normal (x, m, s)$                    /* теоретическая плотность распределения нормального закона с параметрами  m = μ_0, s = s_0 */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X_pdf: histogram_description ( X,
+                                                              nclasses = sturges,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                                              frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                              fill_density = 0.5)$
+histfr_X_pdf: makelist (part (hist_X_pdf[5], i)[2], i, 1, length(hist_X_pdf[5]))$       /* результат функции histogram_description - frequency по интервалам */
+Δfr_X_pdf: makelist (part (hist_X_pdf[5], i)[3], i, 1, length(hist_X_pdf[5]))$       /* результат функции histogram_description - ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X_pdf,
+                     color = blue, key = "теоретическая плотность распределения",
+                     explicit (length(X) * Δfr_X_pdf[1] * pdf_theor(x), x, μ_X - 3*s_X, μ_X + 3*s_X),
+                     yrange = [0, smax(histfr_X_pdf)*1.8],                        
+                     grid = true,
+                     title = "Теоретическая плотность распределения и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+КРИТЕРИЙ ХИ-КВАДРАТ (ПРОСТАЯ ГИПОТЕЗА)
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Число интервалов группировки
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формула Стерджесса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+k_sturges(N):= round (3.31*log10(N)+1)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+k_sturges(n_X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формула Скотта:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+k_scott(N, s):= round (3.5*s*N^(-1/3))$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+k_scott(n_X, std1(X));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формула Фридмана-Диакониса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+k_fd(N, IQ):= round (2*IQ*N^(-1/3))$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+k_fd(n_X, qrange (X));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формула Уильямса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+k_will(N):= floor(1.9*N^0.4)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K: k_will(n_X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Графики:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X_sturges: histogram_description (X,
+                                                                     nclasses = sturges,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                                                     frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                                     fill_density = 0.5)$
+histfr_X_sturges: makelist (part (hist_X_sturges[5], i)[2], i, 1, length(hist_X_sturges[5]))$       /* результат функции histogram_description - frequency по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X_scott: histogram_description (X,
+                                                                 nclasses = scott,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                                                 frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                                 fill_density = 0.5)$
+histfr_X_scott: makelist (part (hist_X_scott[5], i)[2], i, 1, length(hist_X_scott[5]))$       /* результат функции histogram_description - frequency по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X_fd: histogram_description (X,
+                                                            nclasses = fd,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                                            frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                            fill_density = 0.5)$
+histfr_X_fd: makelist (part (hist_X_fd[5], i)[2], i, 1, length(hist_X_fd[5]))$       /* результат функции histogram_description - frequency по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ymax: max ( smax(histfr_X_sturges), smax(histfr_X_scott), smax(histfr_X_fd) ) * 1.2$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+scene1: gr2d (color = red,
+                         hist_X_sturges,
+                         yrange = [0, ymax],                        
+                         grid = true,
+                         title = "формула Стерджесса",                                            
+                         xlabel = "X", ylabel = "Абсолютная частота")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+scene2: gr2d (color = red,
+                         hist_X_scott,
+                         yrange = [0, ymax],                        
+                         grid = true,
+                         title = "формула Скотта",                                            
+                         xlabel = "X", ylabel = "Абсолютная частота")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+scene3: gr2d (color = red,
+                         hist_X_fd,
+                         yrange = [0, ymax],                        
+                         grid = true,
+                         title = "формула Фридмана-Диакониса",                                            
+                         xlabel = "X", ylabel = "Абсолютная частота")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+set_draw_defaults (font = "Arial", font_size = 8)$                 /* устанавливаем вид и размер шрифта */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw(scene1, scene2, scene3, columns = 3)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+set_draw_defaults (font = "Arial", font_size = 10)$                 /* устанавливаем вид и размер шрифта */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выбранное число интервалов группирования:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K: min (k_sturges(n_X), k_scott(n_X, std1(X)), k_fd(n_X, std1(X)));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетное и табличное значение статистики критерия
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+r: 0$                   /* число параметров распределения, оцениваемых по выборке */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+smin(X);                    /* минимальное значение в выборке */
+smax(X);                    /* максимальное значение в выборке */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+range(X);                    /* вариационный размах */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Интервалы равной длины
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX: R_X / K;                    /* ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Определяем границы интервалов:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K;                  /* кол-во интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound: makelist (0, j, 1, K+1)$                  /* создаем список границ интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound[1]: Xmin$                                                                                /* заполняем список границ интервалов */
+for j: 2 thru K step 1 do Xbound[j]: Xbound[j-1] + ΔX$
+Xbound[K+1]: Xmax$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+setify (Xbound)$                    /* из списка границ интервалов формируем множество границ интервалов (для реализации функции histogram_description) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X: histogram_description ( X,
+                                                       nclasses = setify (Xbound),       /* множество границ интервалов */
+                                                       frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                       fill_density = 0.5);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+bars_X: hist_X[5]$                  /* извлекаем данные из результатов применения функции histogram_description */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_emp_X: makelist (part (bars_X, i)[2], i, 1, length(bars_X));                  /* формируем список частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX_hist_X: makelist (part (bars_X, i)[3], i, 1, length(bars_X));                  /* формируем список ширины интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum (m_emp_X[i], i, 1, length(m_emp_X));                  /* проверяем правильность подсчета эмпирических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем данные для расчета статистики критерия хи-квадрат:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: n_X$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+J:  makelist (j, j, 1, K)$                                                                                    /* формируем данные для расчета статистики критерия в виде списков  */
+Xbound_low: makelist ( Xbound[j], j, 1, K )$
+Xbound_high: makelist ( Xbound[j+1], j, 1, K )$
+Xbound_mean: makelist ( (Xbound[j] + Xbound[j+1])/2, j, 1, K )$
+Zbound_low: makelist ( (Xbound[j] - m) / s, j, 1, K)$                  /* для нормального распределения выполняем масштабирование */
+Zbound_high: makelist ( (Xbound[j+1] - m) / s, j, 1, K)$
+Zbound_mean: makelist ( (Zbound_low[j] + Zbound_high[j])/2, j, 1, K )$
+FZ_low: makelist ( cdf_theor_Z(Zbound_low[j]), j, 1, K)$
+FZ_high: makelist ( cdf_theor_Z(Zbound_high[j]), j, 1, K)$
+PZ: makelist ( FZ_high[j] - FZ_low[j], j, 1, K)$
+m_theor_X: makelist ( PZ[j]*n, j, 1, K)$
+χ2Z: makelist ( (m_emp_X[j] - m_theor_X[j] )² / m_theor_X[j], j, 1, K)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrixχ2: transpose (matrix (J,                                     /*  матрица с данными для таблицы критерия хи-квадрат */
+                                                 Xbound_low,
+                                                 Xbound_high,
+                                                 Xbound_mean,
+                                                 m_emp_X,
+                                                 Zbound_low,
+                                                 Zbound_high,
+                                                 Zbound_mean,
+                                                 FZ_low,
+                                                 FZ_high,
+                                                 PZ,
+                                                 m_theor_X,
+                                                 χ2Z))$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum (m_theor_X[i], i, 1, length(m_theor_X));                  /* проверяем правильность подсчета теоретических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем расчетную таблицу критерия хи-квадрат:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "j", "X[j]", "X[j+1]", "Xmean[j]", "m[j]", "Z[j]", "Z[j+1]", "Zmean[j]", "F[j]", "F[j+1]", "P[j]", "nP[j ]", "(m[j] - nP[j ])² / nP[j ]" ])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Table: "_________________________________________________________________________________________________________________________"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", Table)$
+printf(true, "~5a~12a~13a~13a~16a~13a~13a~13a~15a~17a~19a~18a~15a~5a", "",
+                                                                                                    String[1],
+                                                                                                    String[2],
+                                                                                                    String[3],
+                                                                                                    String[4],
+                                                                                                    String[5],
+                                                                                                    String[6],
+                                                                                                    String[7],
+                                                                                                    String[8],
+                                                                                                    String[9],
+                                                                                                    String[10],
+                                                                                                    String[11],
+                                                                                                    String[12],
+                                                                                                    String[13],
+                                                                                                    "")$
+printf (true, "~a", Table)$
+for j: 1 step 1 thru K do printf (true,"~5d~13,2f~13,2f~15,2f~13d~15,2f~15,2f~15,2f~15,4f~15,4f~15,4f~15,4f~28,4f~%",
+                                                                                                    matrixχ2[j, 1],
+                                                                                                    matrixχ2[j, 2],
+                                                                                                    matrixχ2[j, 3],
+                                                                                                    matrixχ2[j, 4],
+                                                                                                    matrixχ2[j, 5],
+                                                                                                    matrixχ2[j, 6],
+                                                                                                    matrixχ2[j, 7], 
+                                                                                                    matrixχ2[j, 8],
+                                                                                                    matrixχ2[j, 9],  
+                                                                                                    matrixχ2[j, 10],
+                                                                                                    matrixχ2[j, 11],
+                                                                                                    matrixχ2[j, 12],
+                                                                                                    matrixχ2[j, 13]     )$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_calc: sum ( χ2Z[j], j, 1, K );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+График:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_emp_X;                  /* эмпирические частоты по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_theor_X;                  /* теоретические частоты по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+makelist (part (bars_X, i)[1], i, 1, length(bars_X));                   /* середины интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX_hist_X;                  /* ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrix_m_theor_X: points(addcol(col (matrixχ2, 4), col (matrixχ2, 12)))$                    /* формируем матрицу для графика полигона частот */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X,
+                     color = blue, key = "теоретический полигон частот", points_joined = true, point_type = none,
+                     matrix_m_theor_X,
+                     yrange = [0, smax(histfr_X)*1.8],                        
+                     grid = true,
+                     title = "Теоретический и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X,
+                     color = blue, key = "теоретическая плотность распределения",
+                     explicit (n * (range(X)/K) * pdf_theor(x), x, μ_X - 3*s_X, μ_X + 3*s_X),
+                     yrange = [0, smax(histfr_X)*1.8],                        
+                     grid = true,
+                     title = "Теоретическая плотность распределения и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное и табличное значение статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table(p, f):= quantile_chi2 (p, f)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f: K-r-1;                   /* число степеней свободы */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table(p, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Справочно: аппроксимация Вилсона-Хилферти [Кобзарь, с.208]:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table_wh(p, f):= f * ( 1 - 2/(9*f) + quantile_normal (p, 0, 1) * sqrt(2/(9*f)) )³$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if χ2_calc ≤ χ2_table(p, K-r-1) then sprint("Так как χ2_calc ≤ χ2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                                                     else sprint("Так как χ2_calc > χ2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетный и заданный уровень значимости:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+P_χ2_calc: 1 - cdf_chi2 (χ2_calc, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if P_χ2_calc ≥ α then sprint("Так как P_calc ≥ α, то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                              else sprint("Так как P_calc < α, то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка по критерию Романовского:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+R_calc: abs (χ2_calc - f) / sqrt (2*f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if R_calc < 3 then sprint("Так как R_calc < 3, то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                       else sprint("Так как R_calc ≥ 3, то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Интервалы равной длины (с объединением крайних интервалов)
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX: R_X / K;                    /* ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Определяем границы интервалов:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K;                  /* кол-во интервалов до объединения*/
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound: makelist (0, j, 1, K+1)$                  /* создаем список границ интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound[1]: Xmin$                                                                                /* заполняем список границ интервалов до объединения*/
+for j: 2 thru K step 1 do Xbound[j]: Xbound[j-1] + ΔX$
+Xbound[K+1]: Xmax$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+setify (Xbound)$                    /* из списка границ интервалов формируем множество границ интервалов (для реализации функции histogram_description) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Предварительно проверяем эмпирические частоты:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+continuous_freq (X, K);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+ВЫВОД:
+1. Крайние левые интервалы ОБЪЕДИНЯЕМ.
+2. Крайные правые интервалы НЕ ОБЪЕДИНЯЕМ.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K_new: K-1;                  /* кол-во интервалов после объединения*/
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound_new: makelist (0, j, 1, K_new+1)$                  /* создаем список границ интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound_new[1]: Xbound[1]$                                                                                /* заполняем список границ интервалов до объединения*/
+Xbound_new[2]: Xbound[3]$
+for j: 2 thru K_new+1 step 1 do Xbound_new[j]: Xbound[j] + ΔX$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound_new;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+/* СПРАВОЧНО:
+1. Если объединяем крайние левые и правые интервалы:
+K_new: K-2;
+Xbound_new: makelist (0, j, 1, K_new+1)$
+Xbound_new[1]: Xbound[1]$
+Xbound_new[2]: Xbound[3]$                                                       
+for j: 3 thru K_new+1 step 1 do Xbound_new[j]: Xbound[j] + ΔX$
+
+2. Если объединяем крайние левые, но не объединяем крайние правые интервалы:
+K_new: K-1;
+Xbound_new: makelist (0, j, 1, K_new+1)$
+Xbound_new[1]: Xbound[1]$
+Xbound_new[2]: Xbound[3]$
+for j: 2 thru K_new+1 step 1 do Xbound_new[j]: Xbound[j] + ΔX$
+
+3. Если не объединяем крайние левые, но объединяем крайние правые интервалы:
+K_new: K-1;
+Xbound_new: makelist (0, j, 1, K_new+1)$
+Xbound_new[1]: Xbound[1]$                                                                                
+for j: 2 thru K_new step 1 do Xbound_new[j]: Xbound[j]$ 
+Xbound_new[K_new+1]: Xbound[K+1]$                                                                                                   
+*/;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+setify (Xbound_new)$                    /* из списка границ интервалов формируем множество границ интервалов (для реализации функции histogram_description) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X: histogram_description ( X,
+                                                       nclasses = setify (Xbound_new),       /* множество границ интервалов */
+                                                       frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                       fill_density = 0.5);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+bars_X: hist_X[5]$                  /* извлекаем данные из результатов применения функции histogram_description */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_emp_X: makelist (part (bars_X, i)[2], i, 1, length(bars_X));                  /* формируем список частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX_hist_X: makelist (part (bars_X, i)[3], i, 1, length(bars_X));                  /* формируем список ширины интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum (m_emp_X[i], i, 1, length(m_emp_X));                  /* проверяем правильность подсчета эмпирических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем данные для расчета статистики критерия хи-квадрат:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: n_X$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+J:  makelist (j, j, 1, K_new)$                                                                                    /* формируем данные для расчета статистики критерия в виде списков  */
+Xbound_low: makelist ( Xbound_new[j], j, 1, K_new )$
+Xbound_high: makelist ( Xbound_new[j+1], j, 1, K_new )$
+Xbound_mean: makelist ( (Xbound_new[j] + Xbound_new[j+1])/2, j, 1, K_new )$
+Zbound_low: makelist ( (Xbound_new[j] - m) / s, j, 1, K_new)$                  /* для нормального распределения выполняем масштабирование */
+Zbound_high: makelist ( (Xbound_new[j+1] - m) / s, j, 1, K_new)$
+Zbound_mean: makelist ( (Zbound_low[j] + Zbound_high[j])/2, j, 1, K_new )$
+FZ_low: makelist ( cdf_theor_Z(Zbound_low[j]), j, 1, K_new)$
+FZ_high: makelist ( cdf_theor_Z(Zbound_high[j]), j, 1, K_new)$
+PZ: makelist ( FZ_high[j] - FZ_low[j], j, 1, K_new)$
+m_theor_X: makelist ( PZ[j]*n, j, 1, K_new)$
+χ2Z: makelist ( (m_emp_X[j] - m_theor_X[j] )² / m_theor_X[j], j, 1, K_new)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrixχ2: transpose (matrix (J,                                     /*  матрица с данными для таблицы критерия хи-квадрат */
+                                                 Xbound_low,
+                                                 Xbound_high,
+                                                 Xbound_mean,
+                                                 m_emp_X,
+                                                 Zbound_low,
+                                                 Zbound_high,
+                                                 Zbound_mean,
+                                                 FZ_low,
+                                                 FZ_high,
+                                                 PZ,
+                                                 m_theor_X,
+                                                 χ2Z))$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum (m_theor_X[i], i, 1, length(m_theor_X));                  /* проверяем правильность подсчета теоретических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем расчетную таблицу критерия хи-квадрат:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "j", "X[j]", "X[j+1]", "Xmean[j]", "m[j]", "Z[j]", "Z[j+1]", "Zmean[j]", "F[j]", "F[j+1]", "P[j]", "nP[j ]", "(m[j] - nP[j ])² / nP[j ]" ])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Table: "_________________________________________________________________________________________________________________________"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", Table)$
+printf(true, "~5a~12a~13a~13a~16a~13a~13a~13a~15a~17a~19a~18a~15a~5a", "",
+                                                                                                    String[1],
+                                                                                                    String[2],
+                                                                                                    String[3],
+                                                                                                    String[4],
+                                                                                                    String[5],
+                                                                                                    String[6],
+                                                                                                    String[7],
+                                                                                                    String[8],
+                                                                                                    String[9],
+                                                                                                    String[10],
+                                                                                                    String[11],
+                                                                                                    String[12],
+                                                                                                    String[13],
+                                                                                                    "")$
+printf (true, "~a", Table)$
+for j: 1 step 1 thru K_new do printf (true,"~5d~13,2f~13,2f~15,2f~13d~15,2f~15,2f~15,2f~15,4f~15,4f~15,4f~15,4f~28,4f~%",
+                                                                                                    matrixχ2[j, 1],
+                                                                                                    matrixχ2[j, 2],
+                                                                                                    matrixχ2[j, 3],
+                                                                                                    matrixχ2[j, 4],
+                                                                                                    matrixχ2[j, 5],
+                                                                                                    matrixχ2[j, 6],
+                                                                                                    matrixχ2[j, 7], 
+                                                                                                    matrixχ2[j, 8],
+                                                                                                    matrixχ2[j, 9],  
+                                                                                                    matrixχ2[j, 10],
+                                                                                                    matrixχ2[j, 11],
+                                                                                                    matrixχ2[j, 12],
+                                                                                                    matrixχ2[j, 13]     )$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_calc: sum ( χ2Z[j], j, 1, K_new );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+График:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_emp_X;                  /* эмпирические частоты по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_theor_X;                  /* теоретические частоты по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+makelist (part (bars_X, i)[1], i, 1, length(bars_X));                   /* середины интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX_hist_X;                  /* ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrix_m_theor_X: points(addcol(col (matrixχ2, 4), col (matrixχ2, 12)))$                    /* формируем матрицу для графика полигона частот */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X,
+                     color = blue, key = "теоретический полигон частот", points_joined = true, point_type = none,
+                     matrix_m_theor_X,
+                     yrange = [0, smax(histfr_X)*1.8],                        
+                     grid = true,
+                     title = "Теоретический и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X,
+                     color = blue, key = "теоретическая плотность распределения",
+                     explicit (n * (range(X)/K) * pdf_theor(x), x, μ_X - 3*s_X, μ_X + 3*s_X),
+                     yrange = [0, smax(histfr_X)*1.8],                        
+                     grid = true,
+                     title = "Теоретическая плотность распределения и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное и табличное значение статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table(p, f):= quantile_chi2 (p, f)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f: K_new-r-1;                   /* число степеней свободы */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table(p, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Справочно: аппроксимация Вилсона-Хилферти [Кобзарь, с.208]:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table_wh(p, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if χ2_calc ≤ χ2_table(p, K_new-r-1) then sprint("Так как χ2_calc ≤ χ2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                                                                else sprint("Так как χ2_calc > χ2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетный и заданный уровень значимости:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+P_χ2_calc: 1 - cdf_chi2 (χ2_calc, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if P_χ2_calc ≥ α then sprint("Так как P_calc ≥ α, то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                              else sprint("Так как P_calc < α, то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка по критерию Романовского:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+R_calc: abs (χ2_calc - f) / sqrt (2*f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if R_calc < 3 then sprint("Так как R_calc < 3, то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                       else sprint("Так как R_calc ≥ 3, то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Интервалы равной длины (с расширением крайних интервалов)
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX: R_X / K;                    /* ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Определяем границы интервалов:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K;                  /* кол-во интервалов до объединения*/
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound: makelist (0, j, 1, K+1)$                  /* создаем список границ интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound[1]: Xmin$                                                                                /* заполняем список границ интервалов до объединения*/
+for j: 2 thru K step 1 do Xbound[j]: Xbound[j-1] + ΔX$
+Xbound[K+1]: Xmax$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+setify (Xbound)$                    /* из списка границ интервалов формируем множество границ интервалов (для реализации функции histogram_description) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Предварительно проверяем эмпирические частоты:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+continuous_freq (X, K);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+ВЫВОД:
+1. Расширяем крайний левый интервал.
+2. Расширяем крайний правый интервал. 
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: comment start ]
+Определяем границы интервалов (с учетом расширения крайних интервалов):
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound_new: makelist (0, j, 1, K+1)$                  /* создаем список границ интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound_new[1]: Xmin$                                        /* границы области значений С.В. */
+Xbound_new[K+1]: Xmax$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound_new[2]: Xbound[1] + (ΔX*0) + 27;                                      /* границы расширенных крайних интервалов */
+Xbound_new[K]: Xbound[K+1] - (ΔX*0) - 20;                   /* (ΔX*0) - служит для случая, когда интервал не расширяется; тогда принимается ΔX */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+for j: 3 thru K-1 step 1 do Xbound_new[j]: Xbound_new[j-1] + (Xbound_new[K] - Xbound_new[2])/(K-2)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound_new;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+setify (Xbound_new)$                    /* из списка границ интервалов формируем множество границ интервалов (для реализации функции histogram_description) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X: histogram_description ( X,
+                                                       nclasses = setify (Xbound_new),       /* множество границ интервалов */
+                                                       frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                       fill_density = 0.5);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+bars_X: hist_X[5]$                  /* извлекаем данные из результатов применения функции histogram_description */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_emp_X: makelist (part (bars_X, i)[2], i, 1, length(bars_X));                  /* формируем список частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX_hist_X: makelist (part (bars_X, i)[3], i, 1, length(bars_X));                  /* формируем список ширины интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum (m_emp_X[i], i, 1, length(m_emp_X));                  /* проверяем правильность подсчета эмпирических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем данные для расчета статистики критерия хи-квадрат:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: n_X$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+J:  makelist (j, j, 1, K)$                                                                                    /* формируем данные для расчета статистики критерия в виде списков  */
+Xbound_low: makelist ( Xbound_new[j], j, 1, K )$
+Xbound_high: makelist ( Xbound_new[j+1], j, 1, K )$
+Xbound_mean: makelist ( (Xbound_new[j] + Xbound_new[j+1])/2, j, 1, K )$
+Zbound_low: makelist ( (Xbound_new[j] - m) / s, j, 1, K)$                  /* для нормального распределения выполняем масштабирование */
+Zbound_high: makelist ( (Xbound_new[j+1] - m) / s, j, 1, K)$
+Zbound_mean: makelist ( (Zbound_low[j] + Zbound_high[j])/2, j, 1, K )$
+FZ_low: makelist ( cdf_theor_Z(Zbound_low[j]), j, 1, K)$
+FZ_high: makelist ( cdf_theor_Z(Zbound_high[j]), j, 1, K)$
+PZ: makelist ( FZ_high[j] - FZ_low[j], j, 1, K)$
+m_theor_X: makelist ( PZ[j]*n, j, 1, K)$
+χ2Z: makelist ( (m_emp_X[j] - m_theor_X[j] )² / m_theor_X[j], j, 1, K)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrixχ2: transpose (matrix (J,                                     /*  матрица с данными для таблицы критерия хи-квадрат */
+                                                 Xbound_low,
+                                                 Xbound_high,
+                                                 Xbound_mean,
+                                                 m_emp_X,
+                                                 Zbound_low,
+                                                 Zbound_high,
+                                                 Zbound_mean,
+                                                 FZ_low,
+                                                 FZ_high,
+                                                 PZ,
+                                                 m_theor_X,
+                                                 χ2Z))$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum (m_theor_X[i], i, 1, length(m_theor_X));                  /* проверяем правильность подсчета теоретических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем расчетную таблицу критерия хи-квадрат:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "j", "X[j]", "X[j+1]", "Xmean[j]", "m[j]", "Z[j]", "Z[j+1]", "Zmean[j]", "F[j]", "F[j+1]", "P[j]", "nP[j ]", "(m[j] - nP[j ])² / nP[j ]" ])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Table: "_________________________________________________________________________________________________________________________"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", Table)$
+printf(true, "~5a~12a~13a~13a~16a~13a~13a~13a~15a~17a~19a~18a~15a~5a", "",
+                                                                                                    String[1],
+                                                                                                    String[2],
+                                                                                                    String[3],
+                                                                                                    String[4],
+                                                                                                    String[5],
+                                                                                                    String[6],
+                                                                                                    String[7],
+                                                                                                    String[8],
+                                                                                                    String[9],
+                                                                                                    String[10],
+                                                                                                    String[11],
+                                                                                                    String[12],
+                                                                                                    String[13],
+                                                                                                    "")$
+printf (true, "~a", Table)$
+for j: 1 step 1 thru K do printf (true,"~5d~13,2f~13,2f~15,2f~13d~15,2f~15,2f~15,2f~15,4f~15,4f~15,4f~15,4f~28,4f~%",
+                                                                                                    matrixχ2[j, 1],
+                                                                                                    matrixχ2[j, 2],
+                                                                                                    matrixχ2[j, 3],
+                                                                                                    matrixχ2[j, 4],
+                                                                                                    matrixχ2[j, 5],
+                                                                                                    matrixχ2[j, 6],
+                                                                                                    matrixχ2[j, 7], 
+                                                                                                    matrixχ2[j, 8],
+                                                                                                    matrixχ2[j, 9],  
+                                                                                                    matrixχ2[j, 10],
+                                                                                                    matrixχ2[j, 11],
+                                                                                                    matrixχ2[j, 12],
+                                                                                                    matrixχ2[j, 13]     )$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_calc: sum ( χ2Z[j], j, 1, K );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+График:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_emp_X;                  /* эмпирические частоты по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_theor_X;                  /* теоретические частоты по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+makelist (part (bars_X, i)[1], i, 1, length(bars_X));                   /* середины интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX_hist_X;                  /* ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrix_m_theor_X: points(addcol(col (matrixχ2, 4), col (matrixχ2, 12)))$                    /* формируем матрицу для графика полигона частот */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X,
+                     color = blue, key = "теоретический полигон частот", points_joined = true, point_type = none,
+                     matrix_m_theor_X,
+                     yrange = [0, smax(histfr_X)*1.8],                        
+                     grid = true,
+                     title = "Теоретический и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X,
+                     color = blue, key = "теоретическая плотность распределения",
+                     explicit (n * (range(X)/K) * pdf_theor(x), x, μ_X - 3*s_X, μ_X + 3*s_X),
+                     yrange = [0, smax(histfr_X)*1.8],                        
+                     grid = true,
+                     title = "Теоретическая плотность распределения и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное и табличное значение статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table(p, f):= quantile_chi2 (p, f)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f: K_new-r-1;                   /* число степеней свободы */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table(p, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Справочно: аппроксимация Вилсона-Хилферти [Кобзарь, с.208]:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table_wh(p, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if χ2_calc ≤ χ2_table(p, K_new-r-1) then sprint("Так как χ2_calc ≤ χ2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                                                                else sprint("Так как χ2_calc > χ2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетный и заданный уровень значимости:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+P_χ2_calc: 1 - cdf_chi2 (χ2_calc, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if P_χ2_calc ≥ α then sprint("Так как P_calc ≥ α, то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                              else sprint("Так как P_calc < α, то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка по критерию Романовского:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+R_calc: abs (χ2_calc - f) / sqrt (2*f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if R_calc < 3 then sprint("Так как R_calc < 3, то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                       else sprint("Так как R_calc ≥ 3, то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Интервалы равной вероятности (K по формуле Стерджесса)
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K;                  /* число интервалов группировки */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+J: K-1;                 /* число граничных точек */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Определяем границы интервалов:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Pi: 1/K;                    /* вероятность попадания в отдельный интервал */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Pi_list: makelist (Pi * k, k, 1, K);                    /* список с вероятностями попадания в отдельныве интервалы, нарастающим итогом */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Zbound: makelist (quantile_normal (Pi_list[j], 0, 1), j, 1, J);         /* список границ интервалов (для стандартизированного нормального распределения N(0, 1) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound: makelist ( Zbound[j] * s + m, j, 1, J);         /* список границ интервалов (для данного нормального распределения N(m, s) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound_new: append ([Xmin], Xbound, [Xmax]);                 /* список границ интервалов с учетом крайних значений */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+setify (Xbound_new)$                    /* из списка границ интервалов формируем множество границ интервалов (для реализации функции histogram_description) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X: histogram_description ( X,
+                                                       nclasses = setify (Xbound_new),       /* множество границ интервалов */
+                                                       frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                       fill_density = 0.5);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+bars_X: hist_X[5]$                  /* извлекаем данные из результатов применения функции histogram_description */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_emp_X: makelist (part (bars_X, i)[2], i, 1, length(bars_X));                  /* формируем список частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX_hist_X: makelist (part (bars_X, i)[3], i, 1, length(bars_X));                  /* формируем список ширины интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum (m_emp_X[i], i, 1, length(m_emp_X));                  /* проверяем правильность подсчета эмпирических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем данные для расчета статистики критерия хи-квадрат:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: n_X$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+J:  makelist (j, j, 1, K)$                                                                                    /* формируем данные для расчета статистики критерия в виде списков  */
+Xbound_low: makelist ( Xbound_new[j], j, 1, K )$
+Xbound_high: makelist ( Xbound_new[j+1], j, 1, K )$
+Xbound_mean: makelist ( (Xbound_new[j] + Xbound_new[j+1])/2, j, 1, K )$
+Zbound_low: makelist ( (Xbound_new[j] - m) / s, j, 1, K)$                  /* для нормального распределения выполняем масштабирование */
+Zbound_high: makelist ( (Xbound_new[j+1] - m) / s, j, 1, K)$
+Zbound_mean: makelist ( (Zbound_low[j] + Zbound_high[j])/2, j, 1, K )$
+FZ_low: makelist ( cdf_theor_Z(Zbound_low[j]), j, 1, K)$
+FZ_high: makelist ( cdf_theor_Z(Zbound_high[j]), j, 1, K)$
+PZ: makelist ( FZ_high[j] - FZ_low[j], j, 1, K)$
+m_theor_X: makelist ( PZ[j]*n, j, 1, K)$
+χ2Z: makelist ( (m_emp_X[j] - m_theor_X[j] )² / m_theor_X[j], j, 1, K)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrixχ2: transpose (matrix (J,                                     /*  матрица с данными для таблицы критерия хи-квадрат */
+                                                 Xbound_low,
+                                                 Xbound_high,
+                                                 Xbound_mean,
+                                                 m_emp_X,
+                                                 Zbound_low,
+                                                 Zbound_high,
+                                                 Zbound_mean,
+                                                 FZ_low,
+                                                 FZ_high,
+                                                 PZ,
+                                                 m_theor_X,
+                                                 χ2Z))$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum (m_theor_X[i], i, 1, length(m_theor_X));                  /* проверяем правильность подсчета теоретических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем расчетную таблицу критерия хи-квадрат:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "j", "X[j]", "X[j+1]", "Xmean[j]", "m[j]", "Z[j]", "Z[j+1]", "Zmean[j]", "F[j]", "F[j+1]", "P[j]", "nP[j ]", "(m[j] - nP[j ])² / nP[j ]" ])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Table: "_________________________________________________________________________________________________________________________"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", Table)$
+printf(true, "~5a~12a~13a~13a~16a~13a~13a~13a~15a~17a~19a~18a~15a~5a", "",
+                                                                                                    String[1],
+                                                                                                    String[2],
+                                                                                                    String[3],
+                                                                                                    String[4],
+                                                                                                    String[5],
+                                                                                                    String[6],
+                                                                                                    String[7],
+                                                                                                    String[8],
+                                                                                                    String[9],
+                                                                                                    String[10],
+                                                                                                    String[11],
+                                                                                                    String[12],
+                                                                                                    String[13],
+                                                                                                    "")$
+printf (true, "~a", Table)$
+for j: 1 step 1 thru K do printf (true,"~5d~13,2f~13,2f~15,2f~13d~15,2f~15,2f~15,2f~15,4f~15,4f~15,4f~15,4f~28,4f~%",
+                                                                                                    matrixχ2[j, 1],
+                                                                                                    matrixχ2[j, 2],
+                                                                                                    matrixχ2[j, 3],
+                                                                                                    matrixχ2[j, 4],
+                                                                                                    matrixχ2[j, 5],
+                                                                                                    matrixχ2[j, 6],
+                                                                                                    matrixχ2[j, 7], 
+                                                                                                    matrixχ2[j, 8],
+                                                                                                    matrixχ2[j, 9],  
+                                                                                                    matrixχ2[j, 10],
+                                                                                                    matrixχ2[j, 11],
+                                                                                                    matrixχ2[j, 12],
+                                                                                                    matrixχ2[j, 13]     )$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_calc: sum ( χ2Z[j], j, 1, K );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+График:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_emp_X;                  /* эмпирические частоты по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_theor_X;                  /* теоретические частоты по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+makelist (part (bars_X, i)[1], i, 1, length(bars_X));                   /* середины интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX_hist_X;                  /* ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrix_m_theor_X: points(addcol(col (matrixχ2, 4), col (matrixχ2, 12)))$                    /* формируем матрицу для графика полигона частот */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X,
+                     color = blue, key = "теоретический полигон частот", points_joined = true, point_type = none,
+                     matrix_m_theor_X,
+                     yrange = [0, smax(histfr_X)*1.8],                        
+                     grid = true,
+                     title = "Теоретический и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X,
+                     color = blue, key = "теоретическая плотность распределения",
+                     explicit (n * (range(X)/K) * pdf_theor(x), x, μ_X - 3*s_X, μ_X + 3*s_X),
+                     yrange = [0, smax(histfr_X)*1.8],                        
+                     grid = true,
+                     title = "Теоретическая плотность распределения и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное и табличное значение статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table(p, f):= quantile_chi2 (p, f)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f: K-r-1;                   /* число степеней свободы */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table(p, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Справочно: аппроксимация Вилсона-Хилферти [Кобзарь, с.208]:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table_wh(p, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if χ2_calc ≤ χ2_table(p, K-r-1) then sprint("Так как χ2_calc ≤ χ2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                                                     else sprint("Так как χ2_calc > χ2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетный и заданный уровень значимости:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+P_χ2_calc: 1 - cdf_chi2 (χ2_calc, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if P_χ2_calc ≥ α then sprint("Так как P_calc ≥ α, то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                              else sprint("Так как P_calc < α, то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка по критерию Романовского:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+R_calc: abs (χ2_calc - f) / sqrt (2*f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if R_calc < 3 then sprint("Так как R_calc < 3, то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                       else sprint("Так как R_calc ≥ 3, то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Интервалы равной вероятности (К по формуле Уильямса)
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: input   start ] */
+K: k_will(n_X);                 /* число равновероятных интервалов по формуле Уильямса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+J: K-1;                 /* число граничных точек */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Определяем границы интервалов:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Pi: 1/K;                    /* вероятность попадания в отдельный интервал */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Pi_list: makelist (Pi * k, k, 1, K);                    /* список с вероятностями попадания в отдельныве интервалы, нарастающим итогом */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Zbound: makelist (quantile_normal (Pi_list[j], 0, 1), j, 1, J);         /* список границ интервалов (для стандартизированного нормального распределения N(0, 1) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound: makelist ( Zbound[j] * s + m, j, 1, J);         /* список границ интервалов (для данного нормального распределения N(m, s) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xbound_new: append ([Xmin], Xbound, [Xmax]);                 /* список границ интервалов с учетом крайних значений */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+setify (Xbound_new)$                    /* из списка границ интервалов формируем множество границ интервалов (для реализации функции histogram_description) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X: histogram_description ( X,
+                                                       nclasses = setify (Xbound_new),       /* множество границ интервалов */
+                                                       frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                       fill_density = 0.5);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+bars_X: hist_X[5]$                  /* извлекаем данные из результатов применения функции histogram_description */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_emp_X: makelist (part (bars_X, i)[2], i, 1, length(bars_X));                  /* формируем список частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX_hist_X: makelist (part (bars_X, i)[3], i, 1, length(bars_X));                  /* формируем список ширины интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum (m_emp_X[i], i, 1, length(m_emp_X));                  /* проверяем правильность подсчета эмпирических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем данные для расчета статистики критерия хи-квадрат:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: n_X$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+J:  makelist (j, j, 1, K)$                                                                                    /* формируем данные для расчета статистики критерия в виде списков  */
+Xbound_low: makelist ( Xbound_new[j], j, 1, K )$
+Xbound_high: makelist ( Xbound_new[j+1], j, 1, K )$
+Xbound_mean: makelist ( (Xbound_new[j] + Xbound_new[j+1])/2, j, 1, K )$
+Zbound_low: makelist ( (Xbound_new[j] - m) / s, j, 1, K)$                  /* для нормального распределения выполняем масштабирование */
+Zbound_high: makelist ( (Xbound_new[j+1] - m) / s, j, 1, K)$
+Zbound_mean: makelist ( (Zbound_low[j] + Zbound_high[j])/2, j, 1, K )$
+FZ_low: makelist ( cdf_theor_Z(Zbound_low[j]), j, 1, K)$
+FZ_high: makelist ( cdf_theor_Z(Zbound_high[j]), j, 1, K)$
+PZ: makelist ( FZ_high[j] - FZ_low[j], j, 1, K)$
+m_theor_X: makelist ( PZ[j]*n, j, 1, K)$
+χ2Z: makelist ( (m_emp_X[j] - m_theor_X[j] )² / m_theor_X[j], j, 1, K)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrixχ2: transpose (matrix (J,                                     /*  матрица с данными для таблицы критерия хи-квадрат */
+                                                 Xbound_low,
+                                                 Xbound_high,
+                                                 Xbound_mean,
+                                                 m_emp_X,
+                                                 Zbound_low,
+                                                 Zbound_high,
+                                                 Zbound_mean,
+                                                 FZ_low,
+                                                 FZ_high,
+                                                 PZ,
+                                                 m_theor_X,
+                                                 χ2Z))$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sum (m_theor_X[i], i, 1, length(m_theor_X));                  /* проверяем правильность подсчета теоретических частот по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем расчетную таблицу критерия хи-квадрат:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "j", "X[j]", "X[j+1]", "Xmean[j]", "m[j]", "Z[j]", "Z[j+1]", "Zmean[j]", "F[j]", "F[j+1]", "P[j]", "nP[j ]", "(m[j] - nP[j ])² / nP[j ]" ])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Table: "_________________________________________________________________________________________________________________________"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", Table)$
+printf(true, "~5a~12a~13a~13a~16a~13a~13a~13a~15a~17a~19a~18a~15a~5a", "",
+                                                                                                    String[1],
+                                                                                                    String[2],
+                                                                                                    String[3],
+                                                                                                    String[4],
+                                                                                                    String[5],
+                                                                                                    String[6],
+                                                                                                    String[7],
+                                                                                                    String[8],
+                                                                                                    String[9],
+                                                                                                    String[10],
+                                                                                                    String[11],
+                                                                                                    String[12],
+                                                                                                    String[13],
+                                                                                                    "")$
+printf (true, "~a", Table)$
+for j: 1 step 1 thru K do printf (true,"~5d~13,2f~13,2f~15,2f~13d~15,2f~15,2f~15,2f~15,4f~15,4f~15,4f~15,4f~28,4f~%",
+                                                                                                    matrixχ2[j, 1],
+                                                                                                    matrixχ2[j, 2],
+                                                                                                    matrixχ2[j, 3],
+                                                                                                    matrixχ2[j, 4],
+                                                                                                    matrixχ2[j, 5],
+                                                                                                    matrixχ2[j, 6],
+                                                                                                    matrixχ2[j, 7], 
+                                                                                                    matrixχ2[j, 8],
+                                                                                                    matrixχ2[j, 9],  
+                                                                                                    matrixχ2[j, 10],
+                                                                                                    matrixχ2[j, 11],
+                                                                                                    matrixχ2[j, 12],
+                                                                                                    matrixχ2[j, 13]     )$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_calc: sum ( χ2Z[j], j, 1, K );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+График:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_emp_X;                  /* эмпирические частоты по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m_theor_X;                  /* теоретические частоты по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+makelist (part (bars_X, i)[1], i, 1, length(bars_X));                   /* середины интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΔX_hist_X;                  /* ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrix_m_theor_X: points(addcol(col (matrixχ2, 4), col (matrixχ2, 12)))$                    /* формируем матрицу для графика полигона частот */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X,
+                     color = blue, key = "теоретический полигон частот", points_joined = true, point_type = none,
+                     matrix_m_theor_X,
+                     yrange = [0, smax(histfr_X)*1.8],                        
+                     grid = true,
+                     title = "Теоретический и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X,
+                     color = blue, key = "теоретическая плотность распределения",
+                     explicit (n * (range(X)/K) * pdf_theor(x), x, μ_X - 3*s_X, μ_X + 3*s_X),
+                     yrange = [0, smax(histfr_X)*1.8],                        
+                     grid = true,
+                     title = "Теоретическая плотность распределения и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное и табличное значение статистики критерия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table(p, f):= quantile_chi2 (p, f)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f: K-r-1;                   /* число степеней свободы */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table(p, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Справочно: аппроксимация Вилсона-Хилферти [Кобзарь, с.208]:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+χ2_table_wh(p, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if χ2_calc ≤ χ2_table(p, K-r-1) then sprint("Так как χ2_calc ≤ χ2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                                                     else sprint("Так как χ2_calc > χ2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетный и заданный уровень значимости:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+P_χ2_calc: 1 - cdf_chi2 (χ2_calc, f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if P_χ2_calc ≥ α then sprint("Так как P_calc ≥ α, то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                              else sprint("Так как P_calc < α, то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка по критерию Романовского:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+R_calc: abs (χ2_calc - f) / sqrt (2*f);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if R_calc < 3 then sprint("Так как R_calc < 3, то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                       else sprint("Так как R_calc ≥ 3, то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 22.04.0"$
