@@ -1,0 +1,274 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 22.04.0 ] */
+/* [wxMaxima: input   start ] */
+kill(all)$                              /* очистка всех переменных */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Настройка каталогов
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load("operatingsystem")$    /* загрузка пакета для работы с операционной системой */          
+getcurrentdirectory ();        /* вывод текущего каталога */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+maxima_tempdir: "C:\\Users\\Default\\AppData\\Local\\Temp"$          /* C:\\Users\\Alexander\\AppData\\Local\\Temp */;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Настройки программы
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+fpprintprec : 5$                  /* количество цифр при выводе чисел float или bigfloat; по умолчанию = 0; не может быть = 1 */
+numer: true$                      /* true - проведение расчётов только с плавающей точкой, а не с рациональными числами */
+keepfloat: false$                 /* false - не переводить десятичную запись числа в рациональную форму; по умолчанию = false */
+ratepsilon: 2e-8$               /* допуск, на которую рациональное число при переводе может отклониться 
+                                                от конечной десятичной записи; по умолчанию: 2.0e-15 */
+ratprint: false$                    /* отключение сообщений о замене чисел с плавающей точкой на рациональные */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+stats_numer;                    /* выдача результатов в формате с плавающей запятой */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Загрузка дополнительных пакетов и библиотек
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(numericalio)$           /* загрузка пакета для чтения и записи матричных или потоковых данных */          
+load(draw)$                     /* загрузка графического пакета */          
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(stats)$                    /* загрузка пакета для проверки статистических гипотез */
+                                       /* загружает пакеты descriptive (для расчета описательной статистики), 
+                                            distrib (для для выполнения вероятностых вычислений) и inference_result */;
+load ("interpol")$                   /* загрузка пакета интерполяции */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Установка шрифтов
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+set_draw_defaults (font = "Arial", font_size = 10)$                 /* устанавливаем вид и размер шрифта */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+ЗАДАЧА 77
+Оценка параметров биномиального распределения
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: comment start ]
+(Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.182)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p_level: 0.95$                    /* доверительная вероятность */
+α_level: 1-p_level;                   /* уровень значимости */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+ЗАДАЧА ИЗ ИСТОЧНИКА
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Постановка задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+TitleString: "Задача 77 (Кобзарь (2006)"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+При n = 20 испытаниях имели место m = 6 событий. Найти 95%-ный двусторонний доверительный интервал для вероятности появления события в серии независимых испытаний.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: 20$
+m: 6$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Решение задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Точечная оценка вероятности
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p_n: m/n ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Интервальная оценка вероятности
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Точная интервальная оценка
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p_min: 0.119$
+p_max: 0.543$
+matrix([p_min, p_max]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Аппроксимация F-распределением
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: comment start ]
+Квантили F-распределения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+γ: (1+p_level)/2;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f_min1: 2*(n - m + 1);
+f_min2: 2*m;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+quantile_f(γ, f_min1, f_min2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f_max1: 2*(m + 1);
+f_max2: 2*(n-m);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+quantile_f(γ, f_max1, f_max2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Доверительный интервал:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p_min: m / ( (n-m+1) * quantile_f(γ, f_min1, f_min2) );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p_max: (m+1) * quantile_f(γ, f_max1, f_max2) / ( n - m + (m+1) * quantile_f(γ, f_max1, f_max2) );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrix([p_min, p_max]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Аппроксимация распределением хи-квадрат
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: input   start ] */
+k1(q):= log(1/(1-q));
+k2(n, m):= m / sum( 1/(n-i), i, 0, m-1 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+q: m/n;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+k1(q);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+k2(n, m);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Квантили распределения хи-квадрат:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+γ1: (1+p_level)/2;
+f1: 2*m;
+quantile_chi2 (1-γ1, f1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+γ2: (1-p_level)/2;
+f2: 2*(m+1);
+quantile_chi2 (1-γ2, f2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Доверительный интервал:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ p_min: if m <= 0.5*n then 1-exp(-quantile_chi2 (1-γ1, 2*m) / (2*k2(n, m)))
+    else exp(-quantile_chi2 (1-γ2, 2*(n-m+1))/ (2*k2(n, n-m+1)));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ p_max: if m <= 0.5*n then 1-exp(-quantile_chi2 (1-γ2, 2*(m+1)) / (2*k2(n, m+1)))
+    else exp(-quantile_chi2 (1-γ1, 2*(n-m))/ (2*k2(n, n-m)));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrix([p_min, p_max]);
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 22.04.0"$

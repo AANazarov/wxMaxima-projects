@@ -1,0 +1,659 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 22.04.0 ] */
+/* [wxMaxima: input   start ] */
+kill(all)$                              /* очистка всех переменных */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Настройка каталогов
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load("operatingsystem")$    /* загрузка пакета для работы с операционной системой */          
+getcurrentdirectory ();        /* вывод текущего каталога */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+maxima_tempdir: "C:\\Users\\Default\\AppData\\Local\\Temp"$          /* C:\\Users\\Alexander\\AppData\\Local\\Temp */;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Настройки программы
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+fpprintprec : 5$                  /* количество цифр при выводе чисел float или bigfloat; по умолчанию = 0; не может быть = 1 */
+numer: true$                      /* true - проведение расчётов только с плавающей точкой, а не с рациональными числами */
+keepfloat: false$                 /* false - не переводить десятичную запись числа в рациональную форму; по умолчанию = false */
+ratepsilon: 2e-8$               /* допуск, на которую рациональное число при переводе может отклониться 
+                                                от конечной десятичной записи; по умолчанию: 2.0e-15 */
+ratprint: false$                    /* отключение сообщений о замене чисел с плавающей точкой на рациональные */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+stats_numer;                    /* выдача результатов в формате с плавающей запятой */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Загрузка дополнительных пакетов и библиотек
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(numericalio)$           /* загрузка пакета для чтения и записи матричных или потоковых данных */          
+load(draw)$                     /* загрузка графического пакета */          
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(stats)$                    /* загрузка пакета для проверки статистических гипотез */
+                                       /* загружает пакеты descriptive (для расчета описательной статистики), 
+                                            distrib (для для выполнения вероятностых вычислений) и inference_result */;
+load ("interpol") $                 /* загрузка пакета интерполяции */
+load ("lsquares")$                  /* загрузка пакета, реализующего МНК */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Установка шрифтов
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+set_draw_defaults (font = "Arial", font_size = 10)$                 /* устанавливаем вид и размер шрифта */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Пользовательские функции
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+log10(x) := log(x) / log(10);
+loga(x, c) := log(x) / log(c)$         /* функция вычисления логарифма по основанию c */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+radian (α):= α * π/180$         /* функция перевода градусов в радианы */
+grad (β):= β * 180/π$         /* функция первода радианов в градусы */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+ЗАДАЧА 361
+Статистический анализ коэф-тов регрессии (МНК)
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: comment start ]
+(Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.656)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p_level: 0.95$                    /* доверительная вероятность */
+α_level: 1 - p_level;                   /* уровень значимости */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+ЗАДАЧА ИЗ ИСТОЧНИКА
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Постановка задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+TitleString: "Задача 361 (Кобзарь (2006)"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X: [1.2, 2.4, 2.8, 4.2, 5.9, 6.8, 8.1, 9.2, 10.1, 11.0];
+Y: [7, 12, 17, 24, 29, 38, 46, 45, 54, 68];
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: length (X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Решение задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Уравнение регрессионной модели в общем виде
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+regression0:   y_calc_lin(x):= b0 + b1 * x;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Визуализация
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+x_min_graph: 0$         x_max_graph: 15$
+y_min_graph: 0$         y_max_graph: 100$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrix_X_Y: transpose (matrix (X, Y))$
+points_X_Y: points(transpose (matrix_X_Y))$                    /* формируем матрицу для графика полигона частот */ 
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d (key_pos = top_right, proportional_axes = none,
+                    color = red, point_type = plus, point_size = 2, key = "фактические данные", points_X_Y,
+                    xrange = [x_min_graph, x_max_graph],
+                    yrange = [y_min_graph, y_max_graph],
+                    grid = true, grid = [5, 5],
+                    title = TitleString,                                            
+                    xaxis = true, xaxis_type = dots, xaxis_width = 2,
+                    yaxis = true, yaxis_type = dots, yaxis_width = 2,
+                    xlabel = "X", ylabel = "Y");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Находим оценки коэффициентов регрессии
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+Расчетным путем
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: comment start ]
+Контрольные суммы:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sumX: sum ( X[i], i, 1, n );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sumX2: sum ( X[i]^2, i, 1, n );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sumY: sum ( Y[i], i, 1, n );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sumY2: sum ( Y[i]^2, i, 1, n );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sumXY: sum ( X[i] * Y[i], i, 1, n );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Вспомогательные величины:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+QX: sumX2 - (sumX^2) / n;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+QY: sumY2 - (sumY^2) / n;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+QXY: sumXY - (sumX * sumY) / n;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценки коэффициентов регрессии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+b1: (n * sumXY - sumX * sumY) / (n * sumX2 - sumX^2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+b0: (sumY - a1 * sumX) / n;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+С помощью МНК (процедура lsquares_estimates пакета lsquares)
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: comment start ]
+Аппроксимация линейной зависимостью:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kill (b0, b1, x, y)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eqn1_0:         y = b0 + b1 * x;                 /* искомое уравнение в явной форме */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sol1:           lsquares_estimates ( matrix_X_Y,
+                                                        [x, y],
+                                                        eqn1_0,
+                                                        [b0, b1],
+                                                        initial = [1, 1],
+                                                        iprint = [-1, 0]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+b0: ev (b0, sol1);                    /* извлечем нужные значения коэффициентов из списка решений */
+b1: ev (b1, sol1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Уравнение регрессионной модели:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eqn1:           ev(eqn1_0);                   /* подставим значения коэффициентов в искомое уравнение */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+С помощью процедуры linear_regression пакета stat
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Result_simple_linear_regression:    simple_linear_regression (matrix_X_Y, conflevel = p_level);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+items_inference (Result_simple_linear_regression);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Result_linear_regression:    linear_regression (matrix_X_Y, conflevel = p_level);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+items_inference (Result_linear_regression);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Уравнение регрессионной модели:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+take_inference ('model, Result_simple_linear_regression);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Уравнение регрессионной модели
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ev(y, eqn1);                    /* для получения функции подставим выражение для y в уравнение */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+regression:   y_calc_lin(x):= ''%;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+График регрессионной модели
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d (key_pos = top_right, proportional_axes = none,
+                    color = red, point_type = plus, point_size = 2, key = "фактические данные", points_X_Y,
+                    color = blue, key = "линейная регрессинная модель", explicit (y_calc_lin(x), x, x_min_graph, x_max_graph),
+                    xrange = [x_min_graph, x_max_graph],
+                    yrange = [y_min_graph, y_max_graph],
+                    grid = true, grid = [5, 5],
+                    title = TitleString,                                            
+                    xaxis = true, xaxis_type = dots, xaxis_width = 2,
+                    yaxis = true, yaxis_type = dots, yaxis_width = 2,
+                    xlabel = "X", ylabel = "Y");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Проверка значимости коэффициентов регрессии
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Вспомогательные величины:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xmean: mean(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Sx2: var1(X);           /* несмещенная оценка дисперсии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Sx: std1 (X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Остаточная дисперсия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sol1[1];
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+k: length (sol1[1]) - 1;           /* число коэф-тов регрессии (кроме свободного члена) */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Sres2: sum ( ( Y[i] - y_calc_lin(X[i]) )^2, i, 1, n ) / (n - k - 1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Sres: sqrt (Sres2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+коэф-т b1
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценка коэффициента регрессии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+b1;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Стандартное отклонение коэффициента регрессии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Sb1: Sres / ( std1 (X) * sqrt(n-1) );           /* по Кобзарю */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sqrt ( (QY - b1 * QXY) / (n-2) ) / sqrt (QX);           /* проверка по Львовскому */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение статистики критерия Стьюдента:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+t_b1_calc: abs (b1) / Sb1;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличное значение статистики критерия Стьюдента:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+t_b_table: quantile_student_t ( (1 + p_level)/2 , n - k - 1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод: if t_b1_calc < t_b_table then "Так как t_b1_calc < t_b_table, то нулевая гипотеза о равенстве нулю коэф-та регрессии ПРИНИМАЕТСЯ, т.е. коэф-т регрессии НЕЗНАЧИМ"
+                                                         else "Так как t_b1_calc ≥ t_b_table, то нулевая гипотеза о равенстве нулю коэф-та регрессии ОТВЕРГАЕТСЯ, т.е. коэф-т регрессии ЗНАЧИМ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Доверительный интервал для коэффициента регрессии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+b1_calc_low: b1 - Sb1 * t_b_table$
+b1_calc_high: b1 + Sb1 * t_b_table$
+matrix ( [b1_calc_low, b1_calc_high] );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: heading5 start ]
+коэф-т b0
+   [wxMaxima: heading5 end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценка коэффициента регрессии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+b0;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Стандартное отклонение коэффициента регрессии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Sb0: Sres * sqrt ( 1/n + (mean(X))^2 / ( (n-1) * var1(X) ) );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sqrt ( (QY - b1 * QXY) / (n-2) ) * sqrt (1/n + Xmean^2 / QX);           /* проверка по Львовскому */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение статистики критерия Стьюдента:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+t_b0_calc: abs (b0) / Sb0;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод: if t_b0_calc < t_b_table then "Так как t_b1_calc < t_b_table, то нулевая гипотеза о равенстве нулю коэф-та регрессии ПРИНИМАЕТСЯ, т.е. коэф-т регрессии НЕЗНАЧИМ"
+                                                         else "Так как t_b1_calc ≥ t_b_table, то нулевая гипотеза о равенстве нулю коэф-та регрессии ОТВЕРГАЕТСЯ, т.е. коэф-т регрессии ЗНАЧИМ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Доверительный интервал для коэффициента регрессии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+b0_calc_low: b0 - Sb0 * t_b_table$
+b0_calc_high: b0 + Sb0 * t_b_table$
+matrix ( [b0_calc_low, b0_calc_high] );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+ЗАДАЧА 363
+Проверка адекватности регрессии
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: comment start ]
+(Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.658)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: section start ]
+ЗАДАЧА ИЗ ИСТОЧНИКА
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Постановка задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+TitleString: "Задача 363 (Кобзарь (2006)"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверить адекватность регрессии для данных задачи 361, если для оценки дисперсии Y проводилась серия отдельных наблюдений:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Y0: [12, 14, 11, 10, 8, 6, 7, 15, 13];
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Решение задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценка дисперсии Y:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Sy2: var1(Y0);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+m: length(Y0);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка Кобзаря - опять у него ошибка!
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Ymean: mean (Y);
+Ymean0: mean (Y0);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Sy2: sum ( (Y0[i] - Ymean0)^2, i, 1, m ) / (m-1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Остаточная дисперсия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Sres2;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение статистики критерия Фишера:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+F_calc: Sres2 / Sy2;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличное значение статистики критерия Фишера:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f1: n - k -1;           /* число степеней свободы остаточной диспtрсии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f2: m - 1;          /* число степенй свободы дисперсии Y */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+F_table: quantile_f (p_level, f1, f2);
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 22.04.0"$

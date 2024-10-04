@@ -1,0 +1,1939 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 22.04.0 ] */
+/* [wxMaxima: input   start ] */
+maxima_tempdir: "C:\\Users\\Default\\AppData\\Local\\Temp"$          /* C:\\Users\\Alexander\\AppData\\Local\\Temp */;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kill(all)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+fpprintprec : 4$                  /* точность вычислений */
+numer: true$                          /* проведение расчётов только с плавающей точкой, а не с рациональными числами */
+keepfloat: true$                            /* не переводить десятичную запись числа в рациональную форму */
+ratepsilon: 2e-8$                          /* мера, на которую рациональное число при переводе может отклониться от конечной десятичной записи */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(numericalio)$                  /* загрузка пакета для чтения и записи матричных или потоковых данных */          
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(stats)$                    /* загрузка пакета для проверки статистических гипотез */
+                                       /* загружает пакеты descriptive (для расчета описательной статистики), distrib (для для выполнения вероятностых вычислений) и inference_result */;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load ("interpol") $
+load(draw)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+stats_numer;                    /* выдача результатов в формате с плавающей запятой */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+log10(x) := log(x) / log(10);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+set_draw_defaults (font = "Arial", font_size = 10)$                 /* устанавливаем вид и размер шрифта */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+ЗАДАЧА 105
+Проверка нормальности распределения
+по критерию Колмогорова-Смирнова и Мизеса,
+сложная гипотеза
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: comment start ]
+(Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.234)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p: 0.9$                    /* доверительная вероятность */
+α: 1-p;                   /* уровень значимости */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+ЗАДАЧА ИЗ ИСТОЧНИКА
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Постановка задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверить гипотезу о принадлежности выборки нормальному закону распределения. Параметры распределения оценить по выборке.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Подготовка исходных данных
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+TitleString: "Задача 105 (Кобзарь (2006)"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X: [4, 8, 7, 9, 19, 18, 12, 21, 30, 25]$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Первичная обработка результатов наблюдений
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Гистограмма
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n_X: length(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X: histogram_description (X,
+                                                      nclasses = fd,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                                      frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                      fill_density = 0.5)$
+histfr_X: makelist (part (hist_X[5], i)[2], i, 1, length(hist_X[5]))$       /* результат функции histogram_description - frequency по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d (color = red, key = "алгоритм группирования Фридмана-Диакониса",
+                    hist_X,
+                    yrange = [0, smax(histfr_X)*1.5],                        
+                    grid = true,
+                    title = TitleString,                                            
+                    xlabel = "X", ylabel = "Абсолютная частота" );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Характеристики выборки
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочное среднее значение:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ_X: mean(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+t-тест для среднего значения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_mean (X, p);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_μX: take_inference(conf_interval, %);                   /* доверительный интервал выборочного среднего */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Медиана:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Me_X: median(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочная дисперсия и С.К.О.:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+D_X: var1(X);                    /* выброчная дисперсия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочное С.К.О.:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s_X: std1(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+std(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+χ²-тест для дисперсии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_variance (X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_D_X: take_inference(conf_interval, %);                   /* доверительный интервал дисперсии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_s_X: sqrt(%);                    /* доверительный интервал С.К.О. */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Вариационный размах и коэффициент вариации:]
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xmin: smin(X);                    /* минимальное значение */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xmax: smax(X);                    /* максимальное значение */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+R_X: range(X);                    /* вариационный размах */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+V_X: cv (X);                    /* коэффициент вариации */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % ≤ 0.33 then sprint("Выборка однородна") else sprint("Выборка НЕоднородна")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Асимметрия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+As_X: skewness (X);                 /* показатель асимметрии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+As1_X: sqrt (n_X*(n_X-1)) / (n_X-2) * As_X;                 /* несмещенная оценка показателя асимметрии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценка асимметрии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % = 0 then "Асимметрия отсутствует"
+              else if % < 0 then if abs(%) ≤ 0.25 then sprint("Асимметрия левосторонняя, незначительная")
+                                                                           else if abs(%) ≤ 0.5 then sprint("Асимметрия левосторонняя, умеренная")
+                                                                                                              else sprint("Асимметрия левосторонняя, значительная")
+                                     else if abs(%) ≤ 0.25 then sprint("Асимметрия правосторонняя, незначительная")
+                                                                           else if abs(%) ≤ 0.5 then sprint("Асимметрия правосторонняя, умеренная")
+                                                                                                              else sprint("Асимметрия правосторонняя, значительная")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Эксцесс:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Es_X: kurtosis (X);                 /* показатель эксцесса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kurtosis(X) + 3;                    /* выражение для эксцесса, используемое в книге Кобзаря */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Es1_X: (n_X-1) / ((n_X-2)*(n_X-3)) * ((n_X+1)*Es_X + 6);                    /* несмещенная оценка показателя эксцесса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценка эксцесса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % = 0 then sprint("Распределение нормальное")
+              else if % > 0 then sprint("Распределение островершинное")
+                                     else sprint("Распределение плосковершинное")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Проверка нормальности по критерию Шапиро-Уилка
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_normality(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if take_inference(2, %) ≥ α then sprint("Так как Pvalue ≥ 0.05, то гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ")
+                                               else sprint("Так как Pvalue < 0.05, то гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X_ab: histogram_description ( X,
+                                                              nclasses = fd,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                                              frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                              fill_density = 0.5)$
+histfr_X_ab: makelist (part (hist_X_ab[5], i)[2], i, 1, length(hist_X_ab[5]))$       /* результат функции histogram_description - frequency по интервалам */
+Δfr_X_ab: makelist (part (hist_X_ab[5], i)[3], i, 1, length(hist_X_ab[5]))$       /* результат функции histogram_description - ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X_ab,
+                     color = blue, key = "теоретическая нормальная кривая",
+                     explicit (length(X) * Δfr_X_ab[1] * pdf_normal (x, μ_X, s_X), x, μ_X - 3*s_X, μ_X + 3*s_X),
+                     yrange = [0, smax(histfr_X_ab)*1.5],                        
+                     grid = true,
+                     title = "Теоретическая нормальная кривая и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Оценка параметров распределения по выборке:
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Параметры распределения, оцененные по выборке:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ: μ_X;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s: s_X;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+КРИТЕРИЙ КОЛМОГОРОВА-СМИРНОВА (классический вариант)
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Критерий Колмогорова-Смирнова применяется при n ≥ 50
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.215)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетная таблица
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Сортируем массив исходных данных по возрастанию:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xsort: sort(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Теоретическая функция распределения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Ftheor(x):= cdf_normal (x, 0, 1)$                    /* теоретическая функция распределения нормального закона */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем данные для расчета статистики критерия Колмогорова:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: n_X$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+I:  makelist (i, i, 1, n)$                    /* формируем данные для расчета статистики критерия в виде списков  */
+Z: makelist ((Xsort[i] - μ) / s, i, 1, n)$                  /* для нормального распределения выполняем масштабирование */
+FZ: makelist (Ftheor(Z[i]), i, 1, n)$
+In: makelist (i/n, i, 1, n)$
+In1: makelist ((i-1)/n, i, 1, n)$
+InFZ: makelist (i/n - Ftheor(Z[i]), i, 1, n)$
+FZIn1: makelist (Ftheor(Z[i]) - (i-1)/n, i, 1, n)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrixSK: transpose (matrix (I, Xsort, Z, FZ, In, In1, InFZ, FZIn1));                 /*  матрица с данными для таблицы критерия Колмогорова-Смирнова */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем расчетную таблицу критерия Колмогорова-Смирнова:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "i", "X[i]", "Z[i]", "F(Z[i])", "i/n", "(i-1)/n", "i/n - F(Z[i])", "F(Z[i]) - (i-1)/n" ])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Table: "___________________________________________________________________________________________"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", Table)$
+printf(true, "~20a~19a~20a~21a~25a~19a~15a~17a~5a", "",
+                                                                                                    String[1],
+                                                                                                    String[2],
+                                                                                                    String[3],
+                                                                                                    String[4],
+                                                                                                    String[5],
+                                                                                                    String[6],
+                                                                                                    String[7],
+                                                                                                    String[8],
+                                                                                                    "")$
+printf (true, "~a", Table)$
+for i: 1 step 1 thru n do printf (true,"~20d~20,1f~20,3f~20,4f~20,2f~20,2f~20,4f~20,4f~%",  matrixSK[i, 1],
+                                                                                                                                                            matrixSK[i, 2],
+                                                                                                                                                            matrixSK[i, 3],
+                                                                                                                                                            matrixSK[i, 4],
+                                                                                                                                                            matrixSK[i, 5],
+                                                                                                                                                            matrixSK[i, 6],
+                                                                                                                                                            matrixSK[i, 7],
+                                                                                                                                                            matrixSK[i, 8] )$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетное и табличное значение статистики критерия
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение статистики критерия Колмогорова-Смирнова:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dsup: smax (InFZ);                  
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dinf: smax (FZIn1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn: smax ([Dsup, Dinf]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn_calc: Dn*(sqrt(n) - 0.01+0.85/sqrt(n));                 /* модифицированная статистика для проверки нормальнгости распределения - [Кобзарь, с.233] */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличное значение статистики критерия Колмогорова-Смирнова (при проверке сложной гипотезы)
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.233):
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+α_table: [0.15, 0.1, 0.05, 0.03, 0.01]$
+Dn_table: [0.775, 0.819, 0.895, 0.955, 1.035]$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Промежуточные значения определим с помошью интерполяции:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+transpose ( matrix (α_table, Dn_table))$
+linearinterpol (transpose (matrix (α_table, Dn_table)))$                /* линейная интерполяция */
+Dn_table(x):= ''%$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxplot2d ([ [discrete, α_table, Dn_table], Dn_table(x)],
+                  [x, 0, 0.2],
+                  [style, points, lines],
+                  [color, red, blue],
+                  [point_type, diamond],
+                  [xlabel, "α"], [ylabel, "Dn_(α)"],              
+                  grid2d, [grid, 1, 1],
+                  [title, "Линейная интерполяция табличных значений статистики Колмогорова-Смирнова"],
+                  [legend, "табличные значения", "интерполяция"]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка гипотезы:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn_table(α);                    /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if Dn_calc ≤ Dn_table(α) then sprint("Так как Dn_calc ≤ Dn_table(α), то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                                           else sprint("Так как Dn_calc > Dn_table(α), то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+График теоретической и эмпирической функции распределения
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Femp(x):= ''( cdf_empirical(Z) )$                       /* эмпирическая функция распределения */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирическая функция распределения", line_width = 2.0,
+                     explicit ( Femp(x), x, smin(Z), smax(Z)+7 ),
+                     color = blue, key = "теоретическая функция распределения", line_width = 1.0,
+                     explicit ( Ftheor(x), x, smin(Z), smax(Z)+7 ),                     
+                     grid = true,
+                     xrange = [smin(Z), smax(Z)+7], yrange = [0, 1],                 
+                     title = "Теоретическая и эмпирическая функции распределения",                                            
+                     fill_color = red,
+                     xlabel = "Z");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+КРИТЕРИЙ СМИРНОВА-КРАМЕРА-МИЗЕСА
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетная таблица
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем данные для расчета статистики критерия Смирнова-Крамера-Мизеса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+I:  makelist (i, i, 1, n)$                    /* формируем данные для расчета статистики критерия в виде списков  */
+Z: makelist ( (Xsort[i] - μ) / s, i, 1, n )$                  /* для нормального распределения выполняем масштабирование */
+FZ: makelist ( Ftheor(Z[i]), i, 1, n )$
+I1n: makelist ( (2*i-1)/(2*n), i, 1, n )$
+FZ2I1n: makelist ( Ftheor(Z[i]) - (2*i-1)/(2*n), i, 1, n )$
+FZ2I1n2: makelist ( ( Ftheor(Z[i]) - (2*i-1)/(2*n) )², i, 1, n )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrixω2: transpose (matrix (I, Xsort, Z, FZ, I1n, FZ2I1n, FZ2I1n2))$                 /*  матрица с данными для таблицы критерия Смирнова-Крамера-Мизеса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем расчетную таблицу критерия Смирнова-Крамера-Мизеса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "i", "X[i]", "Z[i]", "F(Z[i])", "(2i-1)/(2n)", "F(Z[i]) - (2i-1)/(2n)", "(F(Z[i]) - (2i-1)/(2n))²" ])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Table: "________________________________________________________________________________________________"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", Table)$
+printf(true, "~20a~19a~24a~22a~18a~19a~25a~5a", "",
+                                                                                                    String[1],
+                                                                                                    String[2],
+                                                                                                    String[3],
+                                                                                                    String[4],
+                                                                                                    String[5],
+                                                                                                    String[6],
+                                                                                                    String[7],
+                                                                                                    "")$
+printf (true, "~a", Table)$
+for i: 1 step 1 thru n do printf (true,"~20d~20,4f~20,4f~20,4f~20,4f~28,4f~30,4f~%",  matrixω2[i, 1],
+                                                                                                                                                  matrixω2[i, 2],
+                                                                                                                                                  matrixω2[i, 3],
+                                                                                                                                                  matrixω2[i, 4],
+                                                                                                                                                  matrixω2[i, 5],
+                                                                                                                                                  matrixω2[i, 6],
+                                                                                                                                                  matrixω2[i, 7] )$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетное и табличное значение статистики критерия
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение статистики критерия Смирнова-Крамера-Мизеса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ω2_calc: 1/(12*n) + sum ( ( Ftheor(Z[i]) - (2*i-1)/(2*n) )², i, 1, n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличное значение статистики критерия ω² Крамера-Мизеса-Смирнова (если ОБА ПАРАМЕТРА μ и s ОЦЕНИВАЮТСЯ ПО ВЫБОРКЕ)
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.233)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+α_table: [0.1, 0.05, 0.01, 0.005, 0.001]$                   
+ω2_table: [0.1035, 0.1260, 0.1788, 0.2018, 0.2559]$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Промежуточные значения определим с помошью интерполяции:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+transpose ( matrix (α_table, ω2_table))$
+linearinterpol (transpose (matrix (α_table, ω2_table)))$                /* линейная интерполяция */
+ω2_table(x):= ''%$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxplot2d ([ [discrete, α_table, ω2_table], ω2_table(x)],
+                  [x, 0, 0.2],
+                  [style, points, lines],
+                  [color, red, blue],
+                  [point_type, diamond],
+                  [xlabel, "α"], [ylabel, "ω2(α)"],              
+                  grid2d, [grid, 1, 1],
+                  [title, "Линейная интерполяция табличных значений статистики Смирнова-Крамера-Мизеса"],
+                  [legend, "табличные значения", "интерполяция"]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка гипотезы:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ω2_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ω2_table(α);                    /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if ω2_calc ≤ ω2_table(α) then sprint("Так как ω2_calc ≤ ω2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                                            else sprint("Так как ω2_calc > ω2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+ПРОИЗВОЛЬНЫЙ ПРИМЕР N(0, 1)
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Постановка задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверить гипотезу о принадлежности выборки нормальному закону распределения. Параметры распределения оценить по выборке.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Подготовка исходных данных
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+TitleString: "Задача 105 (Кобзарь (2006)"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Смоделируем выборку с нормальным законом распределения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: 100$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1: random_normal (0, 1, n)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Первичная обработка результатов наблюдений
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Гистограмма
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n_X1: length(X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X1: histogram_description (X1,
+                                                      nclasses = sturges,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                                      frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                      fill_density = 0.5)$
+histfr_X1: makelist (part (hist_X1[5], i)[2], i, 1, length(hist_X1[5]))$       /* результат функции histogram_description - frequency по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d (color = red, key = "алгоритм группирования Стерджесса",
+                    hist_X1,
+                    yrange = [0, smax(histfr_X1)*1.5],                        
+                    grid = true,
+                    title = TitleString,                                            
+                    xlabel = "X", ylabel = "Абсолютная частота" );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Характеристики выборки
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочное среднее значение:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ_X1: mean(X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+t-тест для среднего значения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_mean (X1, p);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_μX1: take_inference(conf_interval, %);                   /* доверительный интервал выборочного среднего */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Медиана:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Me_X1: median(X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочная дисперсия и С.К.О.:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+D_X1: var1(X1);                    /* выброчная дисперсия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочное С.К.О.:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s_X1: std1(X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+χ²-тест для дисперсии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_variance (X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_D_X1: take_inference(conf_interval, %);                   /* доверительный интервал дисперсии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_s_X1: sqrt(%);                    /* доверительный интервал С.К.О. */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Вариационный размах и коэффициент вариации:]
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1min: smin(X1);                    /* минимальное значение */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1max: smax(X1);                    /* максимальное значение */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+R_X1: range(X1);                    /* вариационный размах */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+V_X1: cv (X1);                    /* коэффициент вариации */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % ≤ 0.33 then sprint("Выборка однородна") else sprint("Выборка НЕоднородна")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Асимметрия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+As_X1: skewness (X1);                 /* показатель асимметрии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+As1_X1: sqrt (n_X1*(n_X1-1)) / (n_X1-2) * As_X1;                 /* несмещенная оценка показателя асимметрии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценка асимметрии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % = 0 then "Асимметрия отсутствует"
+              else if % < 0 then if abs(%) ≤ 0.25 then sprint("Асимметрия левосторонняя, незначительная")
+                                                                           else if abs(%) ≤ 0.5 then sprint("Асимметрия левосторонняя, умеренная")
+                                                                                                              else sprint("Асимметрия левосторонняя, значительная")
+                                     else if abs(%) ≤ 0.25 then sprint("Асимметрия правосторонняя, незначительная")
+                                                                           else if abs(%) ≤ 0.5 then sprint("Асимметрия правосторонняя, умеренная")
+                                                                                                              else sprint("Асимметрия правосторонняя, значительная")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Эксцесс:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Es_X1: kurtosis (X1);                 /* показатель эксцесса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kurtosis(X1) + 3;                    /* выражение для эксцесса, используемое в книге Кобзаря */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Es1_X1: (n_X1-1) / ((n_X1-2)*(n_X1-3)) * ((n_X1+1)*Es_X1 + 6);                    /* несмещенная оценка показателя эксцесса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценка эксцесса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % = 0 then sprint("Распределение нормальное")
+              else if % > 0 then sprint("Распределение островершинное")
+                                     else sprint("Распределение плосковершинное")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Проверка нормальности по критерию Шапиро-Уилка
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_normality(X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if take_inference(2, %) ≥ α then sprint("Так как Pvalue ≥ 0.05, то гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ")
+                                               else sprint("Так как Pvalue < 0.05, то гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X1_ab: histogram_description ( X1,
+                                                              nclasses = sturges,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                                              frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                              fill_density = 0.5)$
+histfr_X1_ab: makelist (part (hist_X1_ab[5], i)[2], i, 1, length(hist_X1_ab[5]))$       /* результат функции histogram_description - frequency по интервалам */
+Δfr_X1_ab: makelist (part (hist_X1_ab[5], i)[3], i, 1, length(hist_X1_ab[5]))$       /* результат функции histogram_description - ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X1_ab,
+                     color = blue, key = "теоретическая нормальная кривая",
+                     explicit (length(X1) * Δfr_X1_ab[1] * pdf_normal (x, μ_X1, s_X1), x, μ_X1 - 3*s_X1, μ_X1 + 3*s_X1),
+                     yrange = [0, smax(histfr_X1_ab)*1.5],                        
+                     grid = true,
+                     title = "Теоретическая нормальная кривая и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+КРИТЕРИЙ КОЛМОГОРОВА-СМИРНОВА (классический вариант)
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Критерий Колмогорова-Смирнова применяется при n ≥ 50
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.215)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетная таблица
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Сортируем массив исходных данных по возрастанию:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xsort: sort(X1)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Параметры распределения, оцененные по выборке:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ: μ_X1;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s: s_X1;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Теоретическая функция распределения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Ftheor(x):= cdf_normal (x, 0, 1)$                    /* теоретическая функция распределения нормального закона */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем данные для расчета статистики критерия Колмогорова:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: n_X1$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+I:  makelist (i, i, 1, n)$                    /* формируем данные для расчета статистики критерия в виде списков  */
+Z: makelist ((Xsort[i] - μ) / s, i, 1, n)$                  /* для нормального распределения выполняем масштабирование */
+FZ: makelist (Ftheor(Z[i]), i, 1, n)$
+In: makelist (i/n, i, 1, n)$
+In1: makelist ((i-1)/n, i, 1, n)$
+InFZ: makelist (i/n - Ftheor(Z[i]), i, 1, n)$
+FZIn1: makelist (Ftheor(Z[i]) - (i-1)/n, i, 1, n)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrixSK: transpose (matrix (I, Xsort, Z, FZ, In, In1, InFZ, FZIn1))$                 /*  матрица с данными для таблицы критерия Колмогорова-Смирнова */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем расчетную таблицу критерия Колмогорова-Смирнова:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "i", "X[i]", "Z[i]", "F(Z[i])", "i/n", "(i-1)/n", "i/n - F(Z[i])", "F(Z[i]) - (i-1)/n" ])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Table: "___________________________________________________________________________________________"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", Table)$
+printf(true, "~20a~19a~20a~21a~25a~19a~15a~17a~5a", "",
+                                                                                                    String[1],
+                                                                                                    String[2],
+                                                                                                    String[3],
+                                                                                                    String[4],
+                                                                                                    String[5],
+                                                                                                    String[6],
+                                                                                                    String[7],
+                                                                                                    String[8],
+                                                                                                    "")$
+printf (true, "~a", Table)$
+for i: 1 step 1 thru n do printf (true,"~20d~20,1f~20,3f~20,4f~20,2f~20,2f~20,4f~20,4f~%",  matrixSK[i, 1],
+                                                                                                                                                            matrixSK[i, 2],
+                                                                                                                                                            matrixSK[i, 3],
+                                                                                                                                                            matrixSK[i, 4],
+                                                                                                                                                            matrixSK[i, 5],
+                                                                                                                                                            matrixSK[i, 6],
+                                                                                                                                                            matrixSK[i, 7],
+                                                                                                                                                            matrixSK[i, 8] )$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетное и табличное значение статистики критерия
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение статистики критерия Колмогорова-Смирнова:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dsup: smax (InFZ);                  
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dinf: smax (FZIn1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn: smax ([Dsup, Dinf]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn_calc: Dn*(sqrt(n) - 0.01+0.85/sqrt(n));                 /* модифицированная статистика для проверки нормальнгости распределения - [Кобзарь, с.233] */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличное значение статистики критерия Колмогорова-Смирнова (при проверке сложной гипотезы)
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.233):
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+α_table: [0.15, 0.1, 0.05, 0.03, 0.01]$
+Dn_table: [0.775, 0.819, 0.895, 0.955, 1.035]$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка гипотезы:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn_table(α);                    /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if Dn_calc ≤ Dn_table(α) then sprint("Так как Dn_calc ≤ Dn_table(α), то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                                           else sprint("Так как Dn_calc > Dn_table(α), то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+График теоретической и эмпирической функции распределения
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Femp(x):= ''( cdf_empirical(Z) )$                       /* эмпирическая функция распределения */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирическая функция распределения", line_width = 2.0,
+                     explicit ( Femp(x), x, smin(Z), smax(Z)+7 ),
+                     color = blue, key = "теоретическая функция распределения", line_width = 1.0,
+                     explicit ( Ftheor(x), x, smin(Z), smax(Z)+7 ),                     
+                     grid = true,
+                     xrange = [smin(Z), smax(Z)+7], yrange = [0, 1],                 
+                     title = "Теоретическая и эмпирическая функции распределения",                                            
+                     fill_color = red,
+                     xlabel = "Z");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+КРИТЕРИЙ СМИРНОВА-КРАМЕРА-МИЗЕСА
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетная таблица
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем данные для расчета статистики критерия Смирнова-Крамера-Мизеса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+I:  makelist (i, i, 1, n)$                    /* формируем данные для расчета статистики критерия в виде списков  */
+Z: makelist ( (Xsort[i] - μ) / s, i, 1, n )$                  /* для нормального распределения выполняем масштабирование */
+FZ: makelist ( Ftheor(Z[i]), i, 1, n )$
+I1n: makelist ( (2*i-1)/(2*n), i, 1, n )$
+FZ2I1n: makelist ( Ftheor(Z[i]) - (2*i-1)/(2*n), i, 1, n )$
+FZ2I1n2: makelist ( ( Ftheor(Z[i]) - (2*i-1)/(2*n) )², i, 1, n )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrixω2: transpose (matrix (I, Xsort, Z, FZ, I1n, FZ2I1n, FZ2I1n2))$                 /*  матрица с данными для таблицы критерия Смирнова-Крамера-Мизеса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем расчетную таблицу критерия Смирнова-Крамера-Мизеса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "i", "X[i]", "Z[i]", "F(Z[i])", "(2i-1)/(2n)", "F(Z[i]) - (2i-1)/(2n)", "(F(Z[i]) - (2i-1)/(2n))²" ])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Table: "________________________________________________________________________________________________"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", Table)$
+printf(true, "~20a~19a~24a~22a~18a~19a~25a~5a", "",
+                                                                                                    String[1],
+                                                                                                    String[2],
+                                                                                                    String[3],
+                                                                                                    String[4],
+                                                                                                    String[5],
+                                                                                                    String[6],
+                                                                                                    String[7],
+                                                                                                    "")$
+printf (true, "~a", Table)$
+for i: 1 step 1 thru n do printf (true,"~20d~20,4f~20,4f~20,4f~20,4f~28,4f~30,4f~%",  matrixω2[i, 1],
+                                                                                                                                                  matrixω2[i, 2],
+                                                                                                                                                  matrixω2[i, 3],
+                                                                                                                                                  matrixω2[i, 4],
+                                                                                                                                                  matrixω2[i, 5],
+                                                                                                                                                  matrixω2[i, 6],
+                                                                                                                                                  matrixω2[i, 7] )$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетное и табличное значение статистики критерия
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение статистики критерия Смирнова-Крамера-Мизеса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ω2_calc: 1/(12*n) + sum ( ( Ftheor(Z[i]) - (2*i-1)/(2*n) )², i, 1, n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличное значение статистики критерия ω² Крамера-Мизеса-Смирнова (если ОБА ПАРАМЕТРА μ и s ОЦЕНИВАЮТСЯ ПО ВЫБОРКЕ)
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.233)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+α_table: [0.1, 0.05, 0.01, 0.005, 0.001]$                   
+ω2_table: [0.1035, 0.1260, 0.1788, 0.2018, 0.2559]$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка гипотезы:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ω2_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ω2_table(α);                    /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if ω2_calc ≤ ω2_table(α) then sprint("Так как ω2_calc ≤ ω2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                                            else sprint("Так как ω2_calc > ω2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+ПРОИЗВОЛЬНЫЙ ПРИМЕР LOGN(0, 1)
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Постановка задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверить гипотезу о принадлежности выборки нормальному закону распределения. Параметры распределения оценить по выборке.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Подготовка исходных данных
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+TitleString: "Задача 105 (Кобзарь (2006)"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Смоделируем выборку с логнормальным законом распределения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: 100$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X2: random_lognormal (0, 0.4, n)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Первичная обработка результатов наблюдений
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Гистограмма
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n_X2: length(X2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X2: histogram_description (X2,
+                                                      nclasses = sturges,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                                      frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                      fill_density = 0.5)$
+histfr_X2: makelist (part (hist_X2[5], i)[2], i, 1, length(hist_X2[5]))$       /* результат функции histogram_description - frequency по интервалам */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d (color = red, key = "алгоритм группирования Стерджесса",
+                    hist_X2,
+                    yrange = [0, smax(histfr_X2)*1.5],                        
+                    grid = true,
+                    title = TitleString,                                            
+                    xlabel = "X", ylabel = "Абсолютная частота" );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Характеристики выборки
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочное среднее значение:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ_X2: mean(X2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+t-тест для среднего значения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_mean (X2, p);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_μX2: take_inference(conf_interval, %);                   /* доверительный интервал выборочного среднего */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Медиана:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Me_X2: median(X2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочная дисперсия и С.К.О.:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+D_X2: var1(X2);                    /* выброчная дисперсия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Выборочное С.К.О.:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s_X2: std1(X2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+χ²-тест для дисперсии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_variance (X2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_D_X2: take_inference(conf_interval, %);                   /* доверительный интервал дисперсии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+conf_interval_s_X2: sqrt(%);                    /* доверительный интервал С.К.О. */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Вариационный размах и коэффициент вариации:]
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X2min: smin(X2);                    /* минимальное значение */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X2max: smax(X2);                    /* максимальное значение */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+R_X2: range(X2);                    /* вариационный размах */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+V_X2: cv (X2);                    /* коэффициент вариации */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % ≤ 0.33 then sprint("Выборка однородна") else sprint("Выборка НЕоднородна")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Асимметрия:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+As_X2: skewness (X2);                 /* показатель асимметрии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+As1_X2: sqrt (n_X2*(n_X2-1)) / (n_X2-2) * As_X2;                 /* несмещенная оценка показателя асимметрии */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценка асимметрии:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % = 0 then "Асимметрия отсутствует"
+              else if % < 0 then if abs(%) ≤ 0.25 then sprint("Асимметрия левосторонняя, незначительная")
+                                                                           else if abs(%) ≤ 0.5 then sprint("Асимметрия левосторонняя, умеренная")
+                                                                                                              else sprint("Асимметрия левосторонняя, значительная")
+                                     else if abs(%) ≤ 0.25 then sprint("Асимметрия правосторонняя, незначительная")
+                                                                           else if abs(%) ≤ 0.5 then sprint("Асимметрия правосторонняя, умеренная")
+                                                                                                              else sprint("Асимметрия правосторонняя, значительная")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Эксцесс:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Es_X2: kurtosis (X2);                 /* показатель эксцесса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kurtosis(X2) + 3;                    /* выражение для эксцесса, используемое в книге Кобзаря */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Es1_X2: (n_X2-1) / ((n_X2-2)*(n_X2-3)) * ((n_X2+1)*Es_X2 + 6);                    /* несмещенная оценка показателя эксцесса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Оценка эксцесса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if % = 0 then sprint("Распределение нормальное")
+              else if % > 0 then sprint("Распределение островершинное")
+                                     else sprint("Распределение плосковершинное")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Проверка нормальности по критерию Шапиро-Уилка
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_normality(X2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if take_inference(2, %) ≥ α then sprint("Так как Pvalue ≥ 0.05, то гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ")
+                                               else sprint("Так как Pvalue < 0.05, то гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+hist_X2_ab: histogram_description ( X2,
+                                                              nclasses = sturges,                    /* sturges - алгоритм группирования Стерджесса; fd - Фридмана-Диакониса;  scott  - Скотта*/                                                       
+                                                              frequency = absolute,    /* Абсолютная частота (absolute), Относительная частота (relative), Проценты (percent), Плотность (density) */
+                                                              fill_density = 0.5)$
+histfr_X2_ab: makelist (part (hist_X2_ab[5], i)[2], i, 1, length(hist_X2_ab[5]))$       /* результат функции histogram_description - frequency по интервалам */
+Δfr_X2_ab: makelist (part (hist_X2_ab[5], i)[3], i, 1, length(hist_X2_ab[5]))$       /* результат функции histogram_description - ширина интервалов */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирический полигон частот",
+                     hist_X2_ab,
+                     color = blue, key = "теоретическая нормальная кривая",
+                     explicit (length(X2) * Δfr_X2_ab[1] * pdf_normal (x, μ_X2, s_X2), x, μ_X2 - 3*s_X2, μ_X2 + 3*s_X2),
+                     yrange = [0, smax(histfr_X2_ab)*1.5],                        
+                     grid = true,
+                     title = "Теоретическая нормальная кривая и эмпирический полигон частот",                                            
+                     fill_color = red,
+                     xlabel = "X", ylabel = "Абсолютная частота");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+КРИТЕРИЙ КОЛМОГОРОВА-СМИРНОВА (классический вариант)
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Критерий Колмогорова-Смирнова применяется при n ≥ 50
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.215)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетная таблица
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Сортируем массив исходных данных по возрастанию:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Xsort: sort(X2)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Параметры распределения, оцененные по выборке:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+μ: μ_X2;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+s: s_X2;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Теоретическая функция распределения:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Ftheor(x):= cdf_normal (x, 0, 1)$                    /* теоретическая функция распределения нормального закона */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем данные для расчета статистики критерия Колмогорова:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: n_X2$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+I:  makelist (i, i, 1, n)$                    /* формируем данные для расчета статистики критерия в виде списков  */
+Z: makelist ((Xsort[i] - μ) / s, i, 1, n)$                  /* для нормального распределения выполняем масштабирование */
+FZ: makelist (Ftheor(Z[i]), i, 1, n)$
+In: makelist (i/n, i, 1, n)$
+In1: makelist ((i-1)/n, i, 1, n)$
+InFZ: makelist (i/n - Ftheor(Z[i]), i, 1, n)$
+FZIn1: makelist (Ftheor(Z[i]) - (i-1)/n, i, 1, n)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrixSK: transpose (matrix (I, Xsort, Z, FZ, In, In1, InFZ, FZIn1))$                 /*  матрица с данными для таблицы критерия Колмогорова-Смирнова */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем расчетную таблицу критерия Колмогорова-Смирнова:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "i", "X[i]", "Z[i]", "F(Z[i])", "i/n", "(i-1)/n", "i/n - F(Z[i])", "F(Z[i]) - (i-1)/n" ])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Table: "___________________________________________________________________________________________"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", Table)$
+printf(true, "~20a~19a~20a~21a~25a~19a~15a~17a~5a", "",
+                                                                                                    String[1],
+                                                                                                    String[2],
+                                                                                                    String[3],
+                                                                                                    String[4],
+                                                                                                    String[5],
+                                                                                                    String[6],
+                                                                                                    String[7],
+                                                                                                    String[8],
+                                                                                                    "")$
+printf (true, "~a", Table)$
+for i: 1 step 1 thru n do printf (true,"~20d~20,1f~20,3f~20,4f~20,2f~20,2f~20,4f~20,4f~%",  matrixSK[i, 1],
+                                                                                                                                                            matrixSK[i, 2],
+                                                                                                                                                            matrixSK[i, 3],
+                                                                                                                                                            matrixSK[i, 4],
+                                                                                                                                                            matrixSK[i, 5],
+                                                                                                                                                            matrixSK[i, 6],
+                                                                                                                                                            matrixSK[i, 7],
+                                                                                                                                                            matrixSK[i, 8] )$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетное и табличное значение статистики критерия
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение статистики критерия Колмогорова-Смирнова:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dsup: smax (InFZ);                  
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dinf: smax (FZIn1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn: smax ([Dsup, Dinf]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn_calc: Dn*(sqrt(n) - 0.01+0.85/sqrt(n));                 /* модифицированная статистика для проверки нормальнгости распределения - [Кобзарь, с.233] */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличное значение статистики критерия Колмогорова-Смирнова (при проверке сложной гипотезы)
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.233):
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+α_table: [0.15, 0.1, 0.05, 0.03, 0.01]$
+Dn_table: [0.775, 0.819, 0.895, 0.955, 1.035]$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка гипотезы:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Dn_table(α);                    /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if Dn_calc ≤ Dn_table(α) then sprint("Так как Dn_calc ≤ Dn_table(α), то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                                           else sprint("Так как Dn_calc > Dn_table(α), то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+График теоретической и эмпирической функции распределения
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Femp(x):= ''( cdf_empirical(Z) )$                       /* эмпирическая функция распределения */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d ( color = red, key = "эмпирическая функция распределения", line_width = 2.0,
+                     explicit ( Femp(x), x, smin(Z), smax(Z)+7 ),
+                     color = blue, key = "теоретическая функция распределения", line_width = 1.0,
+                     explicit ( Ftheor(x), x, smin(Z), smax(Z)+7 ),                     
+                     grid = true,
+                     xrange = [smin(Z), smax(Z)+7], yrange = [0, 1],                 
+                     title = "Теоретическая и эмпирическая функции распределения",                                            
+                     fill_color = red,
+                     xlabel = "Z");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+КРИТЕРИЙ СМИРНОВА-КРАМЕРА-МИЗЕСА
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетная таблица
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем данные для расчета статистики критерия Смирнова-Крамера-Мизеса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+I:  makelist (i, i, 1, n)$                    /* формируем данные для расчета статистики критерия в виде списков  */
+Z: makelist ( (Xsort[i] - μ) / s, i, 1, n )$                  /* для нормального распределения выполняем масштабирование */
+FZ: makelist ( Ftheor(Z[i]), i, 1, n )$
+I1n: makelist ( (2*i-1)/(2*n), i, 1, n )$
+FZ2I1n: makelist ( Ftheor(Z[i]) - (2*i-1)/(2*n), i, 1, n )$
+FZ2I1n2: makelist ( ( Ftheor(Z[i]) - (2*i-1)/(2*n) )², i, 1, n )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrixω2: transpose (matrix (I, Xsort, Z, FZ, I1n, FZ2I1n, FZ2I1n2))$                 /*  матрица с данными для таблицы критерия Смирнова-Крамера-Мизеса */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем расчетную таблицу критерия Смирнова-Крамера-Мизеса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "i", "X[i]", "Z[i]", "F(Z[i])", "(2i-1)/(2n)", "F(Z[i]) - (2i-1)/(2n)", "(F(Z[i]) - (2i-1)/(2n))²" ])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Table: "________________________________________________________________________________________________"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+printf (true, "~a", Table)$
+printf(true, "~20a~19a~24a~22a~18a~19a~25a~5a", "",
+                                                                                                    String[1],
+                                                                                                    String[2],
+                                                                                                    String[3],
+                                                                                                    String[4],
+                                                                                                    String[5],
+                                                                                                    String[6],
+                                                                                                    String[7],
+                                                                                                    "")$
+printf (true, "~a", Table)$
+for i: 1 step 1 thru n do printf (true,"~20d~20,4f~20,4f~20,4f~20,4f~28,4f~30,4f~%",  matrixω2[i, 1],
+                                                                                                                                                  matrixω2[i, 2],
+                                                                                                                                                  matrixω2[i, 3],
+                                                                                                                                                  matrixω2[i, 4],
+                                                                                                                                                  matrixω2[i, 5],
+                                                                                                                                                  matrixω2[i, 6],
+                                                                                                                                                  matrixω2[i, 7] )$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчетное и табличное значение статистики критерия
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение статистики критерия Смирнова-Крамера-Мизеса:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ω2_calc: 1/(12*n) + sum ( ( Ftheor(Z[i]) - (2*i-1)/(2*n) )², i, 1, n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табличное значение статистики критерия ω² Крамера-Мизеса-Смирнова (если ОБА ПАРАМЕТРА μ и s ОЦЕНИВАЮТСЯ ПО ВЫБОРКЕ)
+(см. Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.233)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+α_table: [0.1, 0.05, 0.01, 0.005, 0.001]$                   
+ω2_table: [0.1035, 0.1260, 0.1788, 0.2018, 0.2559]$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка гипотезы:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ω2_calc;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ω2_table(α);                    /* табличное значение статистики критерия */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if ω2_calc ≤ ω2_table(α) then sprint("Так как ω2_calc ≤ ω2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ПРИНИМАЕТСЯ")
+                                            else sprint("Так как ω2_calc > ω2_table(α), то гипотеза о принадлежности выборки заданному закону распределения ОТКЛОНЯЕТСЯ")$
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 22.04.0"$

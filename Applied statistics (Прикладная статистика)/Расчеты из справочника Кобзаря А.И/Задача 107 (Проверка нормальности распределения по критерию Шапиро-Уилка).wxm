@@ -1,0 +1,253 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 22.04.0 ] */
+/* [wxMaxima: input   start ] */
+maxima_tempdir: "C:\\Users\\Default\\AppData\\Local\\Temp"$          /* C:\\Users\\Alexander\\AppData\\Local\\Temp */;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kill(all)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+fpprintprec : 5$                  /* точность вычислений */
+numer: true$                          /* проведение расчётов только с плавающей точкой, а не с рациональными числами */
+keepfloat: true$                            /* не переводить десятичную запись числа в рациональную форму */
+ratepsilon: 2e-8$                          /* мера, на которую рациональное число при переводе может отклониться от конечной десятичной записи */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(numericalio)$                  /* загрузка пакета для чтения и записи матричных или потоковых данных */          
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(stats)$                    /* загрузка пакета для проверки статистических гипотез */
+                                        /* загружает пакеты descriptive (для расчета описательной статистики), distrib (для для выполнения вероятностых вычислений) и inference_result */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+stats_numer;                    /* выдача результатов в формате с плавающей запятой */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+log10(x) := log(x) / log(10);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+ЗАДАЧА 107
+Проверка нормальности распределения
+по критерию Шапиро-Уилка
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p: 0.95$                    /* доверительная вероятность */
+α: 1-p;                   /* уровень значимости */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+Задача из книги Кобзаря:
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X: [-1, 0, 1, 2, 3, 5, 6, 7, 10, 15]$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxhistogram (X,
+                        frequency = relative,
+                        nclasses = fd,                  /* алгоритм группирования Фридмана-Диакониса */
+                        ylabel = "Относительная частота",
+                        fill_color = red,
+                        fill_density = 0.3 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxhistogram (X,
+                        frequency = relative,
+                        nclasses = scott,                  /* алгоритм группирования Скотта */
+                        ylabel = "Относительная частота",
+                        fill_color = red,
+                        fill_density = 0.3 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxhistogram (X,
+                        frequency = relative,
+                        nclasses = sturges,                    /* алгоритм группирования Стерджесса */
+                        ylabel = "Относительная частота",
+                        fill_color = red,
+                        fill_density = 0.3 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_normality(X);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if take_inference(2, %) ≥ α then "Так как Pvalue ≥ 0.05, то гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ"
+                                               else "Так как Pvalue < 0.05, то гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+Проверка на произвольном примере
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Смоделируем выборку с нормальным законом распределения:
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: 300$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1: random_normal (0, 1, n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxhistogram (X1,
+                        frequency = density,
+                        nclasses = sturges,                    /* алгоритм группирования Стерджесса */
+                        fill_color = red,
+                        fill_density = 0.3 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка по критерию Шапиро-Уилка:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_normality(X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if take_inference(2, %) ≥ α then "Так как Pvalue ≥ 0.05, то гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ"
+                                               else "Так как Pvalue < 0.05, то гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Смоделируем выборку с экспоненциальным законом распределения:
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X2: random_exp (0.1, n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxhistogram (X2,
+                        frequency = density,
+                        nclasses = sturges,                    /* алгоритм группирования Стерджесса */
+                        fill_color = red,
+                        fill_density = 0.3 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка по критерию Шапиро-Уилка:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_normality(X2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if take_inference(2, %) ≥ α then "Так как Pvalue ≥ 0.05, то гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ"
+                                               else "Так как Pvalue < 0.05, то гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Смоделируем выборку с логнормальным законом распределения:
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X3: random_lognormal (0, 0.2, n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxhistogram (X3,
+                        frequency = density,
+                        nclasses = sturges,                    /* алгоритм группирования Стерджесса */
+                        fill_color = red,
+                        fill_density = 0.3 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка по критерию Шапиро-Уилка:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_normality(X3);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if take_inference(2, %) ≥ α then "Так как Pvalue ≥ 0.05, то гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ"
+                                               else "Так как Pvalue < 0.05, то гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X4: random_lognormal (0, 0.05, n);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxhistogram (X4,
+                        frequency = density,
+                        nclasses = sturges,                    /* алгоритм группирования Стерджесса */
+                        fill_color = red,
+                        fill_density = 0.3 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Проверка по критерию Шапиро-Уилка:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+test_normality(X4);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+if take_inference(2, %) ≥ α then "Так как Pvalue ≥ 0.05, то гипотеза о нормальном законе распределения ПРИНИМАЕТСЯ"
+                                               else "Так как Pvalue < 0.05, то гипотеза о нормальном законе распределения ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 22.04.0"$

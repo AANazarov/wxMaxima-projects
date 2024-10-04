@@ -1,0 +1,538 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 22.04.0 ] */
+/* [wxMaxima: input   start ] */
+kill(all)$                              /* очистка всех переменных */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Настройка каталогов
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load("operatingsystem")$    /* загрузка пакета для работы с операционной системой */          
+getcurrentdirectory ();        /* вывод текущего каталога */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+maxima_tempdir: "C:\\Users\\Default\\AppData\\Local\\Temp"$          /* C:\\Users\\Alexander\\AppData\\Local\\Temp */;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Настройки программы
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+fpprintprec : 5$                  /* количество цифр при выводе чисел float или bigfloat; по умолчанию = 0; не может быть = 1 */
+numer: true$                      /* true - проведение расчётов только с плавающей точкой, а не с рациональными числами */
+keepfloat: false$                 /* false - не переводить десятичную запись числа в рациональную форму; по умолчанию = false */
+ratepsilon: 2e-8$               /* допуск, на которую рациональное число при переводе может отклониться 
+                                                от конечной десятичной записи; по умолчанию: 2.0e-15 */
+ratprint: false$                    /* отключение сообщений о замене чисел с плавающей точкой на рациональные */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+stats_numer;                    /* выдача результатов в формате с плавающей запятой */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Загрузка дополнительных пакетов и библиотек
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(numericalio)$           /* загрузка пакета для чтения и записи матричных или потоковых данных */          
+load(draw)$                     /* загрузка графического пакета */          
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load(stats)$                    /* загрузка пакета для проверки статистических гипотез */
+                                       /* загружает пакеты descriptive (для расчета описательной статистики), 
+                                            distrib (для для выполнения вероятностых вычислений) и inference_result */;
+load ("interpol")$                   /* загрузка пакета интерполяции */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Установка шрифтов
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+set_draw_defaults (font = "Arial", font_size = 10)$                 /* устанавливаем вид и размер шрифта */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+ЗАДАЧА 336
+Коэффициент ранговой корреляциии Кендалла 
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: comment start ]
+(Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.625)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p_level: 0.95$                    /* доверительная вероятность */
+α_level: 1-p_level;                   /* уровень значимости */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+ЗАДАЧА ИЗ ИСТОЧНИКА
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Постановка задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+TitleString: "Задача 336 (Кобзарь (2006)"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kill (X1, X2)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1: [2, 4, 7, 1, 5, 9, 11, 12, 17, 8];
+X2: [6, 3 ,5, 7, 1, 2, 4, 14, 18, 21];
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+/*X1: [31, 82, 25, 26, 53, 30, 29];
+X2: [21, 55, 8, 27, 32, 42, 26];*/;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+length (X1);
+length (X2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+n: length (X1);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Установить наличие/отсутствие корреляционной зависимости, используя коэффициент ранговой корреляции Кендалла.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Решение задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+	
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+График
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X: copylist (X1)$
+Y: copylist (X2)$    
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+matrix_X_Y: transpose (matrix (X, Y))$
+points_X_Y: points(transpose (matrix_X_Y))$                    /* формируем матрицу для графика полигона частот */ 
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw2d (key_pos = top_right, proportional_axes = none,
+                    color = red, point_type = plus, point_size = 2, key = "фактические данные", points_X_Y,
+                    xrange = [0, smax(X)*1.1],
+                    yrange = [0, smax(Y)*1.4],
+                    grid = true, grid = [5, 5],
+                    title = TitleString,                                            
+                    xaxis = true, xaxis_type = dots, xaxis_width = 2,
+                    yaxis = true, yaxis_type = dots, yaxis_width = 2,
+                    xlabel = "X1", ylabel = "X2");
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Предварительная обработка исходных данных
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем массивы для сортированных данных и выполняем сортировку по возрастанию:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1_sort: copylist(X1)$
+X2_sort_X1: copylist(X2)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+for i: 1 step 1 thru length (X1_sort)-1 do
+    ( Xmin1: X1_sort[i], Kmin1: i,
+      Xmin2: X2_sort_X1[i], Kmin2: i,
+      for j: i+1 step 1 thru length (X1_sort) do 
+          if X1_sort[j] < Xmin1 then ( Xmin1: X1_sort[j], Kmin1: j,
+                                                   Xmin2: X2_sort_X1[j], Kmin2: j),
+      X1_sort[Kmin1]: X1_sort[i], X1_sort[i]: Xmin1,
+      X2_sort_X1[Kmin2]: X2_sort_X1[i], X2_sort_X1[i]: Xmin2 )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1_sort;
+X2_sort_X1;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X2_sort: sort(X2);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем массивы рангов:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1_rang: makelist (i, i, 1, length(X1_sort))$
+X2_rang: makelist (i, i, 1, length(X2_sort_X1))$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+for i: 1 step 1 thru length (X1) do
+    ( for j1:1 step 1 thru length (X1) do 
+        if X1_sort[j1] = X1[i] then X1_rang[i]: j1,
+      for j2:1 step 1 thru length (X2) do 
+        if X2_sort[j2] = X2[i] then X2_rang[i]: j2 )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1_rang;
+X2_rang;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Сортируем массивы рангов по возрастанию:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1_rang_sort: copylist(X1_rang)$
+X2_rang_sort_X1: copylist(X2_rang)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+for i: 1 step 1 thru length (X1_rang_sort)-1 do
+    ( Xmin1: X1_rang_sort[i], Kmin1: i,
+      Xmin2: X2_rang_sort_X1[i], Kmin2: i,
+      for j: i+1 step 1 thru length (X1_rang_sort) do 
+          if X1_rang_sort[j] < Xmin1 then ( Xmin1: X1_rang_sort[j], Kmin1: j,
+                                                           Xmin2: X2_rang_sort_X1[j], Kmin2: j),
+      X1_rang_sort[Kmin1]: X1_rang_sort[i], X1_rang_sort[i]: Xmin1,
+      X2_rang_sort_X1[Kmin2]: X2_rang_sort_X1[i], X2_rang_sort_X1[i]: Xmin2 )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1_rang_sort;
+X2_rang_sort_X1;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчет коэффициента Кендалла
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчет вспомогательных величин P и Q:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+P_list: makelist (0, i, 1, length (X2_rang_sort_X1))$
+Q_list: makelist (0, i, 1, length (X2_rang_sort_X1))$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+for i: 1 step 1 thru length (X2_rang_sort_X1) do
+    ( P: 0, Q: 0,
+      for j: i+1 step 1 thru length (X2_rang_sort_X1) do
+          ( if X2_rang_sort_X1[j] > X2_rang_sort_X1[i] then P: P+1,
+            if X2_rang_sort_X1[j] < X2_rang_sort_X1[i] then Q: Q+1),
+      P_list[i]: P, Q_list[i]: Q )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+P_list;
+Q_list;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табулирование:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "i", "X1", "X2", "rang(X1)", "rang(X2)", "P", "Q"])$
+Table: "________________________________________________________________"$
+printf (true, "~a", Table)$
+printf(true, "~10a~15a~15a~12a~12a~15a~15a~15a", "",
+            String[1],
+            String[2],
+            String[3],
+            String[4],
+            String[5],
+            String[6],            
+            String[7],                
+            "")$
+printf (true, "~a", Table)$
+for i: 1 step 1 thru n do printf (true,"~10d~15,2f~15,2f~13d~16d~16d~16d~%",
+                                                                i,
+                                                                X1_sort[i],    
+                                                                X2_sort_X1[i],
+                                                                X1_rang_sort[i],    
+                                                                X2_rang_sort_X1[i],
+                                                                P_list[i],
+                                                                Q_list[i])$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΣP: sum (P_list[i], i, 1, length (P_list));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ΣQ: sum (Q_list[i], i, 1, length (Q_list));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение коэффициента Кендалла:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+τ_calc: 2 * (ΣP - ΣQ) / ( n*(n-1) );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Проверка значимости коэффициента Кендалла
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Критическое значение коэффициента Кендалла:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+τ_table: quantile_normal (p_level, 0, 1) * sqrt ( 2 * (2*n + 5) / ( 9*n*(n-1) ) );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод: if abs (τ_calc) > τ_table then "Так как abs (τ_calc) > τ_table, то нулевая гипотеза о наличии корреляции ПРИНИМАЕТСЯ, т.е. коэффициент Кендалла ЗНАЧИМ"
+                                                else "Так как abs (τ_calc) ≤ τ_table, то нулевая гипотеза о наличии корреляции ОТКЛОНЯЕТСЯ, т.е. коэффициент Кендалла НЕЗНАЧИМ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+ЗАДАЧА 337
+Коэффициент ранговой корреляциии Спирмена
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: comment start ]
+(Кобзарь А.И. Прикладная математическая статистика. Для инженеров и научных работников. - М.: ФИЗМАТЛИТ, 2006. - с.628)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: section start ]
+ЗАДАЧА ИЗ ИСТОЧНИКА
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: subsect start ]
+Постановка задачи
+   [wxMaxima: subsect end   ] */
+
+
+/* [wxMaxima: input   start ] */
+TitleString: "Задача 337 (Кобзарь (2006)"$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Использую данные задачи 336, проверить наличие корреляции с помощью коэффициента Спирмена.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Расчет коэффициента Спирмена
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Имеем последовательность рангов (см. выше):
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+X1_rang;
+X2_rang;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем массив разностей рангов:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+d: makelist ( X1_rang[i] - X2_rang[i], i, 1, length (X1_rang) );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Формируем массив квадратов разностей рангов:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+d2: makelist ( (d[i])^2, i, 1, length (X1_rang) );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Табулирование:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+String: ( [ "i", "X1", "X2", "rang(X1)", "rang(X2)", "d", "d^2"])$
+Table: "________________________________________________________________"$
+printf (true, "~a", Table)$
+printf(true, "~10a~15a~15a~12a~12a~15a~15a~15a", "",
+            String[1],
+            String[2],
+            String[3],
+            String[4],
+            String[5],
+            String[6],            
+            String[7],                
+            "")$
+printf (true, "~a", Table)$
+for i: 1 step 1 thru n do printf (true,"~10d~15,2f~15,2f~13d~16d~16d~16d~%",
+                                                                i,
+                                                                X1_sort[i],    
+                                                                X2_sort_X1[i],
+                                                                X1_rang_sort[i],    
+                                                                X2_rang_sort_X1[i],
+                                                                d[i],
+                                                                d2[i])$
+printf (true, "~a", Table)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Σd2: sum (d2[i], i, 1, length (d2));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Расчетное значение коэффициента Спирмена:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ρ_calc: 1 - 6 * Σd2 / ( n * (n² - 1) );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: subsubsect start ]
+Проверка значимости коэффициента Спирмена
+   [wxMaxima: subsubsect end   ] */
+
+
+/* [wxMaxima: comment start ]
+Критическое значение коэффициента Спирмена:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ρ_table: quantile_normal ((1 + p_level)/2, 0, 1) / sqrt ( n-1 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод: if abs (ρ_calc) > ρ_table then "Так как abs (ρ_calc) > ρ_table, то нулевая гипотеза о наличии корреляции ПРИНИМАЕТСЯ, т.е. коэффициент Спирмена ЗНАЧИМ"
+                                                 else "Так как abs (ρ_calc) ≤ ρ_table, то нулевая гипотеза о наличии корреляции ОТКЛОНЯЕТСЯ, т.е. коэффициент Спирмена НЕЗНАЧИМ";
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Аппроксимация Имана-Коновера:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+J_calc: ρ_calc / 2 * ( sqrt (n-1) + sqrt ( (n-2) / (1 - ρ_calc²) ) );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+quantile_student_t ( (1 + p_level)/2, n-2 );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+J_table: quantile_normal ((1 + p_level)/2, 0, 1) / 2 + quantile_student_t ( (1 + p_level)/2, n-2 ) / 2;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Вывод: if J_calc ≥ J_table then "Так как J_calc ≥ J_table, то нулевая гипотеза о наличии корреляции ПРИНИМАЕТСЯ"
+                                        else "Так как J_calc ≥ J_table, то нулевая гипотеза о наличии корреляции ОТКЛОНЯЕТСЯ";
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 22.04.0"$
